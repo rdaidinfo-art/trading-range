@@ -39,7 +39,7 @@ body{background:var(--bg);font-family:"Rajdhani",sans-serif;color:var(--text);mi
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
 .topbar-left{display:flex;align-items:center;gap:14px}
 .topbar-logo{width:48px;height:48px;border-radius:10px;object-fit:cover}
-.topbar-title .logo{font-family:"Orbitron",monospace;font-size:clamp(13px,3.5vw,22px);font-weight:900;color:var(--green);letter-spacing:.15em}
+.topbar-title .logo{font-family:"Orbitron",monospace;font-size:clamp(13px,3.5vw,22px);font-weight:900;color:var(--white);letter-spacing:.15em}
 .topbar-title .logo span{color:var(--cyan)}
 .topbar-title .sub{font-family:"Share Tech Mono",monospace;font-size:9px;color:var(--textdim);letter-spacing:.15em;margin-top:2px}
 .topbar-right{display:flex;align-items:center;gap:8px}
@@ -212,15 +212,15 @@ tbody td{padding:9px 12px;vertical-align:middle}
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">
-      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHZpZXdCb3g9IjAgMCA1NiA1NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSIxMiIgZmlsbD0iIzA2MEEwRiIvPjxyZWN0IHg9IjMiIHk9IjMiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgcng9IjEwIiBzdHJva2U9IiMwMEU2NzYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2Utb3BhY2l0eT0iMC40Ii8+PHRleHQgeD0iMjgiIHk9IjIyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMDBFNjc2IiBsZXR0ZXItc3BhY2luZz0iMiI+UFVMPC90ZXh0Pjx0ZXh0IHg9IjI4IiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzAwRTVGRiIgbGV0dGVyLXNwYWNpbmc9IjIiPkNBTEw8L3RleHQ+PHBhdGggZD0iTTEyIDQyIEwyOCAyMiBMNDQgNDIiIHN0cm9rZT0iIzAwRTY3NiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1vcGFjaXR5PSIwLjMiIGZpbGw9Im5vbmUiLz48L3N2Zz4=" alt="logo">
+      <div style="width:56px;height:56px;border-radius:12px;background:#060a0f;border:1.5px solid rgba(0,230,118,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#00e676;letter-spacing:1px">PUL</span><span style="font-family:Orbitron,monospace;font-size:9px;font-weight:900;color:#00e5ff;letter-spacing:1px">CALL</span></div>
       <div class="auth-logo-text">
         <div class="title">INVEST PULCALL</div>
         <div class="sub">TRADING RANGE DATABASE</div>
       </div>
     </div>
     <div class="auth-lang">
-      <button class="lang-btn active" onclick="setLang('es')" id="btn-es">&#127466;&#127480; ES</button>
-      <button class="lang-btn" onclick="setLang('en')" id="btn-en">&#127482;&#127480; EN</button>
+      <button class="lang-btn active" onclick="setLang('es')" id="btn-es">🇪🇸 ES</button>
+      <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇺🇸 EN</button>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchAuthTab('login')" id="tab-login">INICIAR SESION</button>
@@ -263,7 +263,7 @@ tbody td{padding:9px 12px;vertical-align:middle}
 <div class="wrap">
   <div class="topbar">
     <div class="topbar-left">
-      <img class="topbar-logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHZpZXdCb3g9IjAgMCA1NiA1NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSIxMiIgZmlsbD0iIzA2MEEwRiIvPjxyZWN0IHg9IjMiIHk9IjMiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgcng9IjEwIiBzdHJva2U9IiMwMEU2NzYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2Utb3BhY2l0eT0iMC40Ii8+PHRleHQgeD0iMjgiIHk9IjIyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMDBFNjc2IiBsZXR0ZXItc3BhY2luZz0iMiI+UFVMPC90ZXh0Pjx0ZXh0IHg9IjI4IiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzAwRTVGRiIgbGV0dGVyLXNwYWNpbmc9IjIiPkNBTEw8L3RleHQ+PHBhdGggZD0iTTEyIDQyIEwyOCAyMiBMNDQgNDIiIHN0cm9rZT0iIzAwRTY3NiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1vcGFjaXR5PSIwLjMiIGZpbGw9Im5vbmUiLz48L3N2Zz4=" alt="logo">
+      <div style="width:48px;height:48px;border-radius:10px;background:#060a0f;border:1.5px solid rgba(0,230,118,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-family:Orbitron,monospace;font-size:8px;font-weight:900;color:#00e676;letter-spacing:1px">PUL</span><span style="font-family:Orbitron,monospace;font-size:8px;font-weight:900;color:#00e5ff;letter-spacing:1px">CALL</span></div>
       <div class="topbar-title">
         <div class="logo">TRADING RANGE <span>DATABASE</span></div>
         <div class="sub">&#9658; INVEST PULCALL &#8212; OPTIONS &amp; EQUITY SCANNER &#9668;</div>
@@ -1079,7 +1079,7 @@ function renderQuoteCard(q,zone){
 +'</div>'
 +'<div class="quote-footer">'
 +'<span>Actualizado: '+now+'</span>'
-+'<button class="quote-refresh" onclick="fetchQuote(''+tk+'')">&#8635; ACTUALIZAR</button>'
++'<button class="quote-refresh" onclick="fetchQuote(\''+tk+'\')">&#8635; ACTUALIZAR</button>'
 +'</div>'
 +'</div>';
 }
