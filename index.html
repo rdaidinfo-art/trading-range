@@ -1,1 +1,953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Trading Range Database — Invest PulCall</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#060a0f;--panel:#0d1520;--border:#2a4a64;--green:#00e676;--green2:#00b050;--red:#ff3d57;--amber:#ffab00;--blue:#2979ff;--cyan:#00e5ff;--muted:#5a7a90;--text:#ddeeff;--textdim:#8ab0c8;--white:#e8f4ff}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);font-family:"Rajdhani",sans-serif;color:var(--text);min-height:100vh;overflow-x:hidden}
+.auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.auth-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:32px 28px;width:100%;max-width:400px}
+.auth-logo{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:24px}
+.auth-logo img{width:56px;height:56px;border-radius:12px}
+.auth-logo-text .title{font-family:"Orbitron",monospace;font-size:14px;font-weight:900;color:var(--green);letter-spacing:.15em}
+.auth-logo-text .sub{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--textdim);letter-spacing:.1em;margin-top:3px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:24px}
+.auth-tab{font-family:"Share Tech Mono",monospace;font-size:11px;letter-spacing:.1em;padding:9px;border-radius:3px;border:1px solid var(--border);background:#09121c;color:var(--textdim);cursor:pointer;transition:all .15s;text-align:center}
+.auth-tab.active{background:var(--panel);color:var(--cyan);border-color:var(--cyan)}
+.auth-form-title{font-family:"Orbitron",monospace;font-size:12px;letter-spacing:.15em;color:var(--white);margin-bottom:18px;text-align:center}
+.auth-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.auth-group label{font-family:"Share Tech Mono",monospace;font-size:10px;letter-spacing:.12em;color:#90b8d0}
+.auth-group input{background:#070d14;border:1px solid #2a4060;border-radius:3px;color:var(--white);font-family:"Rajdhani",sans-serif;font-size:16px;font-weight:600;padding:10px 12px;outline:none;width:100%;-webkit-appearance:none}
+.auth-group input:focus{border-color:var(--cyan);box-shadow:0 0 8px rgba(0,229,255,.15)}
+.auth-btn{width:100%;padding:12px;border:none;border-radius:3px;font-family:"Rajdhani",sans-serif;font-size:15px;font-weight:700;letter-spacing:.1em;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.auth-btn-primary{background:var(--green2);color:#000}.auth-btn-primary:active{background:var(--green)}
+.auth-forgot{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--cyan);text-align:center;cursor:pointer;letter-spacing:.08em;margin-bottom:16px;display:block}
+.auth-error{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--red);background:rgba(255,61,87,.08);border:1px solid rgba(255,61,87,.2);padding:8px 12px;border-radius:3px;margin-bottom:12px;display:none;text-align:center}
+.auth-error.show{display:block}
+.auth-success{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--green);background:rgba(0,176,80,.08);border:1px solid rgba(0,176,80,.2);padding:8px 12px;border-radius:3px;margin-bottom:12px;display:none;text-align:center}
+.auth-success.show{display:block}
+.auth-lang{display:flex;justify-content:center;gap:8px;margin-bottom:18px}
+.lang-btn{font-family:"Share Tech Mono",monospace;font-size:12px;padding:7px 16px;border-radius:3px;border:1px solid var(--border);background:#09121c;color:var(--textdim);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.lang-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.1);box-shadow:0 0 8px rgba(0,229,255,.15)}
+.app-screen{display:none}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 14px 80px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar-logo{width:48px;height:48px;border-radius:10px;object-fit:cover}
+.topbar-title .logo{font-family:"Orbitron",monospace;font-size:clamp(13px,3.5vw,22px);font-weight:900;color:var(--green);letter-spacing:.15em}
+.topbar-title .logo span{color:var(--cyan)}
+.topbar-title .sub{font-family:"Share Tech Mono",monospace;font-size:9px;color:var(--textdim);letter-spacing:.15em;margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.user-email{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--textdim);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{font-family:"Share Tech Mono",monospace;font-size:10px;padding:6px 12px;border-radius:3px;border:1px solid var(--border);background:none;color:var(--red);cursor:pointer;transition:all .15s}
+.logout-btn:hover{border-color:var(--red);background:rgba(255,61,87,.08)}
+.header-line{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--green2),transparent);box-shadow:0 0 10px var(--green2);margin-bottom:16px}
+.nav-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+.nav-tab{font-family:"Share Tech Mono",monospace;font-size:11px;letter-spacing:.08em;padding:10px 8px;border-radius:4px 4px 0 0;text-align:center;border:1px solid var(--border);border-bottom:none;background:#09121c;color:var(--textdim);cursor:pointer;transition:all .15s;line-height:1.3}
+.nav-tab.active{background:var(--panel);color:var(--cyan);border-color:var(--cyan);border-bottom:1px solid var(--panel);position:relative;top:1px}
+.tab-page{display:none}.tab-page.active{display:block}
+.sector-block{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 14px;margin-bottom:14px}
+.sector-block-header{margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.sector-block-title{font-family:"Orbitron",monospace;font-size:10px;font-weight:700;letter-spacing:.15em;color:var(--cyan);display:block;margin-bottom:4px}
+.sector-block-desc{font-family:"Share Tech Mono",monospace;font-size:10px;color:#a0c4d8;line-height:1.5}
+.sector-filters{display:flex;flex-wrap:wrap;gap:5px}
+.sf-pill{font-family:"Share Tech Mono",monospace;font-size:10px;padding:5px 11px;border-radius:3px;border:1px solid #2a4060;background:#0a1520;color:#a8c8e0;cursor:pointer;transition:all .15s;font-weight:600}
+.sf-pill.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.12);box-shadow:0 0 8px rgba(0,229,255,.2)}
+.search-bar{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 14px;margin-bottom:14px}
+.search-row1{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.search-row2{display:flex;gap:8px}
+#tickerInput{flex:1;background:#070d14;border:1px solid var(--muted);border-radius:3px;color:var(--green);font-family:"Orbitron",monospace;font-size:16px;font-weight:700;letter-spacing:.12em;padding:9px 12px;outline:none;text-transform:uppercase;width:100%;transition:border-color .2s}
+#tickerInput:focus{border-color:var(--green2);box-shadow:0 0 12px rgba(0,230,118,.2)}
+#tickerInput::placeholder{color:var(--muted);font-size:12px}
+.btn{padding:10px 16px;border:none;border-radius:3px;font-family:"Rajdhani",sans-serif;font-size:14px;font-weight:700;letter-spacing:.1em;cursor:pointer;transition:all .15s;white-space:nowrap;flex:1;text-align:center}
+.btn-search{background:var(--green2);color:#000}.btn-search:active{background:var(--green)}
+.btn-save{background:var(--blue);color:#fff}.btn-save:active{background:#448aff}
+.btn-danger{background:#b71c1c;color:#fff}
+.btn-edit{background:#1a3a5c;color:var(--cyan);border:1px solid var(--cyan)}
+.btn-amber{background:#7a4a00;color:var(--amber);border:1px solid var(--amber)}
+.all-tickers-btn{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--textdim);cursor:pointer;background:none;border:1px solid var(--border);padding:10px 14px;border-radius:3px;width:100%;margin-top:8px;text-align:center}
+.result-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px;min-height:280px;position:relative;overflow:hidden;margin-bottom:14px}
+.result-panel::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green2),var(--cyan),var(--green2));opacity:.7}
+.result-panel.empty .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;gap:10px;color:var(--muted);font-family:"Share Tech Mono",monospace;font-size:11px;text-align:center}
+.empty-state .icon{font-size:40px;opacity:.3}
+.res-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);gap:10px}
+.res-ticker{font-family:"Orbitron",monospace;font-size:clamp(20px,6vw,28px);font-weight:900;color:var(--white)}
+.res-company{color:#90b0c8;margin-top:2px;font-size:13px}
+.res-badge{font-family:"Share Tech Mono",monospace;font-size:10px;letter-spacing:.1em;padding:4px 10px;border-radius:2px;white-space:nowrap}
+.res-exch{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--textdim);margin-top:5px;text-align:right}
+.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.data-card{background:#09121c;border:1px solid var(--border);border-radius:3px;padding:11px 14px}
+.data-card.full{grid-column:1/-1}
+.dc-label{font-family:"Share Tech Mono",monospace;font-size:10px;letter-spacing:.12em;color:#90b8d0;margin-bottom:4px;font-weight:600}
+.dc-value{font-family:"Rajdhani",sans-serif;font-size:20px;font-weight:700;color:var(--white);letter-spacing:.04em}
+.dc-value.green{color:var(--green);text-shadow:0 0 10px rgba(0,230,118,.4)}
+.dc-value.amber{color:var(--amber);text-shadow:0 0 10px rgba(255,171,0,.3)}
+.dc-value.cyan{color:var(--cyan);text-shadow:0 0 10px rgba(0,229,255,.3)}
+.dc-value.small{font-size:15px}
+.range-bar-wrap{margin-top:7px}
+.range-bar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--red) 0%,var(--amber) 40%,var(--green) 80%,var(--cyan) 100%)}
+.watchlist-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.watchlist-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border);background:#0a1520}
+.watchlist-header span{font-family:"Orbitron",monospace;font-size:11px;letter-spacing:.15em;color:var(--amber)}
+.wl-count{font-family:"Share Tech Mono",monospace;font-size:11px;background:rgba(255,171,0,.1);border:1px solid rgba(255,171,0,.25);color:var(--amber);padding:2px 8px;border-radius:2px}
+.watchlist-desc{padding:9px 14px;border-bottom:1px solid var(--border);background:#070e18}
+.watchlist-desc p{font-family:"Share Tech Mono",monospace;font-size:10px;color:#9ab8cc;line-height:1.7}
+.watchlist-desc p b{color:var(--amber)}
+.watchlist-items{overflow-y:auto;max-height:260px}
+.watchlist-items::-webkit-scrollbar{width:4px}
+.watchlist-items::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px}
+.wl-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(26,46,68,.5);cursor:pointer;transition:background .15s}
+.wl-item.active{background:rgba(0,230,118,.08);border-left:2px solid var(--green)}
+.wl-ticker{font-family:"Orbitron",monospace;font-size:13px;font-weight:700}
+.wl-sector{font-size:11px;color:#8ab0c8;margin-top:2px}
+.wl-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;padding:4px 6px}
+.wl-empty{padding:20px 14px;font-family:"Share Tech Mono",monospace;font-size:11px;color:#7a9ab8;text-align:center}
+.notif{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);padding:10px 20px;border-radius:4px;font-family:"Share Tech Mono",monospace;font-size:12px;opacity:0;transition:all .3s;z-index:10000;white-space:nowrap}
+.notif.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.notif.success{background:rgba(0,176,80,.2);border:1px solid var(--green2);color:var(--green)}
+.notif.warning{background:rgba(255,61,87,.15);border:1px solid var(--red);color:var(--red)}
+.admin-wrap{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.admin-header{padding:14px 16px;background:#0a1520;border-bottom:1px solid var(--border)}
+.admin-header h2{font-family:"Orbitron",monospace;font-size:12px;letter-spacing:.15em;color:var(--amber)}
+.admin-header p{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--textdim);margin-top:4px;line-height:1.5}
+.admin-form{padding:16px;border-bottom:2px solid var(--border)}
+.admin-form h3{font-family:"Share Tech Mono",monospace;font-size:11px;letter-spacing:.15em;color:var(--cyan);margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-family:"Share Tech Mono",monospace;font-size:10px;letter-spacing:.1em;color:#90b8d0}
+.form-group input,.form-group select{background:#070d14;border:1px solid #2a4060;border-radius:3px;color:var(--white);font-family:"Rajdhani",sans-serif;font-size:15px;font-weight:600;padding:9px 10px;outline:none;width:100%;-webkit-appearance:none}
+.form-group input:focus,.form-group select:focus{border-color:var(--cyan)}
+.form-group select option{background:#0d1520}
+.form-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.form-actions .btn{flex:0 0 auto;padding:10px 18px}
+.edit-mode-banner{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--amber);background:rgba(255,171,0,.08);border:1px solid rgba(255,171,0,.25);padding:6px 12px;border-radius:3px;display:none}
+.edit-mode-banner.show{display:inline-block}
+.admin-search{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.admin-search input{background:#070d14;border:1px solid #2a4060;border-radius:3px;color:var(--white);font-family:"Rajdhani",sans-serif;font-size:14px;padding:8px 12px;outline:none;flex:1;min-width:150px;-webkit-appearance:none}
+.admin-count{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--textdim)}
+.admin-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:650px}
+thead th{font-family:"Share Tech Mono",monospace;font-size:10px;letter-spacing:.1em;color:#90b8d0;padding:10px 12px;text-align:left;background:#070e18;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(42,74,100,.4)}
+tbody tr:hover{background:rgba(0,229,255,.04)}
+tbody td{padding:9px 12px;vertical-align:middle}
+.td-ticker{font-family:"Orbitron",monospace;font-size:13px;font-weight:700}
+.td-company{color:var(--textdim);font-size:12px}
+.td-range{font-family:"Rajdhani",sans-serif;font-size:15px;font-weight:700;color:var(--green)}
+.td-limits{font-family:"Rajdhani",sans-serif;font-size:13px;color:var(--amber)}
+.td-date{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--textdim);white-space:nowrap}
+.td-actions{display:flex;gap:5px}
+.tbl-btn{font-family:"Share Tech Mono",monospace;font-size:10px;padding:5px 9px;border-radius:2px;border:none;cursor:pointer}
+.tbl-edit{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.3)}
+.tbl-del{background:rgba(255,61,87,.1);color:var(--red);border:1px solid rgba(255,61,87,.3)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-box{background:#0d1520;border:1px solid var(--red);border-radius:6px;padding:24px;max-width:360px;width:100%;text-align:center}
+.modal-box h3{font-family:"Orbitron",monospace;font-size:13px;color:var(--red);margin-bottom:10px}
+.modal-box p{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--textdim);margin-bottom:20px;line-height:1.7}
+.modal-box .modal-ticker{color:var(--white);font-size:17px;font-weight:700}
+.modal-actions{display:flex;gap:10px;justify-content:center}
+.modal-actions .btn{flex:0 0 auto;padding:10px 22px}
+/* XLS IMPORT */
+.xls-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #2a4a64;border-radius:4px;padding:28px 20px;cursor:pointer;background:#070d14;transition:border-color .2s}
+.xls-drop:hover{border-color:#00e676}
+.xls-spinner{width:40px;height:40px;border:3px solid #2a4a64;border-top:3px solid #00e676;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px}
+@media(min-width:700px){
+  .wrap{padding:24px 20px 60px}
+  .nav-tabs{display:flex}
+  .nav-tab{flex:0 0 auto;font-size:12px;padding:8px 22px}
+  .search-row1{margin-bottom:0}
+  .search-row2{display:none}
+  .all-tickers-btn{display:none}
+  .search-row1 .inline-all{display:inline-block;font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--textdim);cursor:pointer;background:none;border:1px solid var(--border);padding:10px 12px;border-radius:3px;white-space:nowrap;flex:0 0 auto}
+  .main-grid{display:grid !important;grid-template-columns:1fr 250px;gap:16px}
+  .result-panel{margin-bottom:0}
+  .watchlist-items{max-height:none}
+  .form-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .dc-value{font-size:22px}
+  .dc-value.small{font-size:17px}
+}
+@media(max-width:699px){
+  .search-row1 .btn-save{display:none}
+  .search-row1 .inline-all{display:none}
+}
+</style>
+</head>
+<body>
 
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAoACgDASIAAhEBAxEB/8QAGQAAAwEBAQAAAAAAAAAAAAAAAAUGBAMH/8QALRAAAQMDAgQFBAMAAAAAAAAAAQIDBAAFERIhMUFRYQYTInGBkRQyoeHw/8QAGAEAAwEBAAAAAAAAAAAAAAAAAwQFAgH/xAAjEQABBAIBBAMAAAAAAAAAAAABAAIDESExQVFhgaHw/9oADAMBAAIRAxEAPwD2gfIajtl15RCEDJUfyKz1zr9KLioURKmlBXKtYzgjptx6VjLhq0OakacZaWvmyFA4OMZ7iuQ9K7LMnhG/jPPHftV16TS5tEKdHHr9dXEWWKqI+YpGwOEg5xnYcaHKzFukmNh50bUNuFDAznGaH3Oqz5S5Hgl1WCpwjlOcc+w2HarP0d0eLJhSmHYgUnzAFT4wfUeRH+qbF5rCXBz5b16V3VpGPnUJ9PCOI3muSMrTXW5s6aSVJCkKBFM3NRW2vMWpJz0PQ+hrk7YkpIIYkjB6pB/taeqaR6QSrwWXiQD0yN6K9lkYxQnllWPcxo7EV//9k=" alt="logo">
+      <div class="auth-logo-text">
+        <div class="title">INVEST PULCALL</div>
+        <div class="sub">TRADING RANGE DATABASE</div>
+      </div>
+    </div>
+    <div class="auth-lang">
+      <button class="lang-btn active" onclick="setLang('es')" id="btn-es">&#127466;&#127480; ES</button>
+      <button class="lang-btn" onclick="setLang('en')" id="btn-en">&#127482;&#127480; EN</button>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')" id="tab-login">INICIAR SESION</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')" id="tab-register">REGISTRARSE</button>
+    </div>
+    <div id="authError" class="auth-error"></div>
+    <div id="authSuccess" class="auth-success"></div>
+    <div id="loginForm">
+      <div class="auth-group">
+        <label>CORREO ELECTRONICO</label>
+        <input id="loginEmail" type="email" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="auth-group">
+        <label>CONTRASENA</label>
+        <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="auth-btn auth-btn-primary" onclick="doLogin()">ENTRAR</button>
+      <span class="auth-forgot" onclick="doForgot()">&#191;Olvidaste tu contrasena?</span>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="auth-group">
+        <label>CORREO ELECTRONICO</label>
+        <input id="regEmail" type="email" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="auth-group">
+        <label>CONTRASENA</label>
+        <input id="regPass" type="password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <div class="auth-group">
+        <label>CONFIRMAR CONTRASENA</label>
+        <input id="regPass2" type="password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <button class="auth-btn auth-btn-primary" onclick="doRegister()">CREAR CUENTA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app-screen" id="appScreen">
+<div class="wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img class="topbar-logo" src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAoACgDASIAAhEBAxEB/8QAGQAAAwEBAQAAAAAAAAAAAAAAAAUGBAMH/8QALRAAAQMDAgQFBAMAAAAAAAAAAQIDBAAFERIhMUFRYQYTInGBkRQyoeHw/8QAGAEAAwEBAAAAAAAAAAAAAAAAAwQFAgH/xAAjEQABBAIBBAMAAAAAAAAAAAABAAIDESExQVFhgaHw/9oADAMBAAIRAxEAPwD2gfIajtl15RCEDJUfyKz1zr9KLioURKmlBXKtYzgjptx6VjLhq0OakacZaWvmyFA4OMZ7iuQ9K7LMnhG/jPPHftV16TS5tEKdHHr9dXEWWKqI+YpGwOEg5xnYcaHKzFukmNh50bUNuFDAznGaH3Oqz5S5Hgl1WCpwjlOcc+w2HarP0d0eLJhSmHYgUnzAFT4wfUeRH+qbF5rCXBz5b16V3VpGPnUJ9PCOI3muSMrTXW5s6aSVJCkKBFM3NRW2vMWpJz0PQ+hrk7YkpIIYkjB6pB/taeqaR6QSrwWXiQD0yN6K9lkYxQnllWPcxo7EV//9k=" alt="logo">
+      <div class="topbar-title">
+        <div class="logo">TRADING RANGE <span>DATABASE</span></div>
+        <div class="sub">&#9658; INVEST PULCALL &#8212; OPTIONS &amp; EQUITY SCANNER &#9668;</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="user-email" id="userEmail"></span>
+      <button class="logout-btn" onclick="doLogout()">SALIR</button>
+    </div>
+  </div>
+  <div class="header-line"></div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('search',this)">&#8981; BUSCAR TICKER</button>
+    <button class="nav-tab" onclick="switchTab('admin',this)">&#9881; ADMINISTRAR DB</button>
+  </div>
+
+  <!-- SEARCH TAB -->
+  <div class="tab-page active" id="tab-search">
+    <div class="sector-block">
+      <div class="sector-block-header">
+        <span class="sector-block-title">&#9672; FILTRO POR SECTOR</span>
+        <span class="sector-block-desc">Filtra tu Watchlist &#8212; click en un sector para ver solo esos tickers</span>
+      </div>
+      <div class="sector-filters" id="sectorFilters"></div>
+    </div>
+    <div class="search-bar">
+      <div class="search-row1">
+        <input id="tickerInput" type="text" placeholder="TSLA &#183; NVDA &#183; SPY" maxlength="6" autocomplete="off" inputmode="text">
+        <button class="btn btn-search" onclick="buscar()">&#8981; BUSCAR</button>
+        <button class="btn btn-save" onclick="guardar()">&#10022; WATCHLIST</button>
+        <button class="inline-all" onclick="showAllTickers()">TODOS &#9660;</button>
+      </div>
+      <div class="search-row2">
+        <button class="btn btn-save" onclick="guardar()">&#10022; AGREGAR A WATCHLIST</button>
+        <button class="all-tickers-btn" onclick="showAllTickers()">TODOS LOS TICKERS &#9660;</button>
+      </div>
+    </div>
+    <div class="main-grid" style="display:block" id="mainGrid">
+      <div class="result-panel empty" id="resultPanel">
+        <div class="empty-state" id="emptyState">
+          <div class="icon">&#9672;</div>
+          <div>ESCRIBE UN TICKER Y PRESIONA BUSCAR</div>
+          <div style="opacity:.5;font-size:10px;margin-top:4px">TSLA &#183; NVDA &#183; SPY &#183; AAPL</div>
+        </div>
+        <div id="resultContent" style="display:none"></div>
+      </div>
+      <div class="watchlist-panel">
+        <div class="watchlist-header">
+          <span>&#9672; WATCHLIST</span>
+          <span class="wl-count" id="wlCount">0</span>
+        </div>
+        <div class="watchlist-desc">
+          <p id="wlDesc">Tu lista de seguimiento.<br><b>WATCHLIST</b> &#8594; guarda el ticker<br><b>Click en ticker</b> &#8594; lo busca<br><b>&#10005;</b> &#8594; elimina</p>
+        </div>
+        <div class="watchlist-items" id="watchlistItems"><div class="wl-empty">-</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN TAB -->
+  <div class="tab-page" id="tab-admin">
+
+    <!-- ═══ XLS IMPORT PANEL ═══ -->
+    <div class="admin-wrap" style="margin-bottom:14px">
+      <div class="admin-header">
+        <h2>&#11014; IMPORTAR DESDE EXCEL / XLS</h2>
+        <p>Sube tu .xls con la tabla de tickers. Las columnas se detectan automaticamente. Cada usuario actualiza solo su propia DB local.</p>
+      </div>
+      <div style="padding:16px">
+        <div id="xlsIdle">
+          <label class="xls-drop" ondragover="event.preventDefault()" ondrop="event.preventDefault();handleXlsFile(event.dataTransfer.files[0])">
+            <input type="file" id="xlsInput" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleXlsFile(this.files[0])">
+            <div style="font-size:28px;margin-bottom:10px;opacity:.6">&#128196;</div>
+            <div style="font-family:Orbitron,monospace;font-size:12px;color:#00e676;letter-spacing:.1em;margin-bottom:5px">CLICK O ARRASTRA TU ARCHIVO XLS</div>
+            <div style="font-size:10px;color:#5a7a90">Formatos: .xls exportado de Excel / Google Sheets / .csv</div>
+          </label>
+          <div style="margin-top:10px;padding:9px 12px;background:#070e18;border-radius:3px;border:1px solid #1a2e44;font-family:Share Tech Mono,monospace;font-size:10px;color:#5a7a90;line-height:1.7">
+            <span style="color:#8ab0c8">Columnas esperadas:</span> TICKER &#183; RANGO OPTIMO &#183; MIN/MAX &#183; FECHA &#183; SECTOR &#183; SUB-SECTOR &#183; BOLSA &#183; EMPRESA
+          </div>
+        </div>
+        <div id="xlsProcessing" style="display:none;text-align:center;padding:20px 0">
+          <div class="xls-spinner"></div>
+          <div style="font-family:Orbitron,monospace;font-size:11px;letter-spacing:.15em;color:#00e676" id="xlsProcLabel">LEYENDO ARCHIVO...</div>
+          <div id="xlsLog" style="font-size:10px;color:#5a7a90;margin-top:10px;text-align:left;background:#070d14;padding:8px 12px;border-radius:3px;line-height:1.9;white-space:pre-line"></div>
+        </div>
+        <div id="xlsPreview" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <div style="font-family:Orbitron,monospace;font-size:11px;color:#00e676" id="xlsSummary"></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-family:Share Tech Mono,monospace;font-size:10px;color:#ffab00" id="xlsSelCount"></span>
+              <button onclick="xlsToggleAll()" style="background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.3);color:#00e5ff;font-family:Share Tech Mono,monospace;font-size:10px;padding:4px 10px;border-radius:2px;cursor:pointer" id="xlsToggleBtn">DESELECT ALL</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;margin-bottom:12px">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px">
+              <thead><tr>
+                <th style="font-family:Share Tech Mono,monospace;font-size:10px;color:#90b8d0;padding:8px 10px;text-align:left;background:#070e18;border-bottom:1px solid #2a4a64">&#10003;</th>
+                <th style="font-family:Share Tech Mono,monospace;font-size:10px;color:#90b8d0;padding:8px 10px;text-align:left;background:#070e18;border-bottom:1px solid #2a4a64">TICKER</th>
+                <th style="font-family:Share Tech Mono,monospace;font-size:10px;color:#90b8d0;padding:8px 10px;text-align:left;background:#070e18;border-bottom:1px solid #2a4a64">EMPRESA</th>
+                <th style="font-family:Share Tech Mono,monospace;font-size:10px;color:#90b8d0;padding:8px 10px;text-align:left;background:#070e18;border-bottom:1px solid #2a4a64">RANGO</th>
+                <th style="font-family:Share Tech Mono,monospace;font-size:10px;color:#90b8d0;padding:8px 10px;text-align:left;background:#070e18;border-bottom:1px solid #2a4a64">LIMITES</th>
+                <th style="font-family:Share Tech Mono,monospace;font-size:10px;color:#90b8d0;padding:8px 10px;text-align:left;background:#070e18;border-bottom:1px solid #2a4a64">FECHA</th>
+                <th style="font-family:Share Tech Mono,monospace;font-size:10px;color:#90b8d0;padding:8px 10px;text-align:left;background:#070e18;border-bottom:1px solid #2a4a64">SECTOR</th>
+                <th style="font-family:Share Tech Mono,monospace;font-size:10px;color:#90b8d0;padding:8px 10px;text-align:left;background:#070e18;border-bottom:1px solid #2a4a64">BOLSA</th>
+              </tr></thead>
+              <tbody id="xlsTbody"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-top:12px;border-top:2px solid #2a4a64">
+            <button onclick="xlsSaveSelected()" id="xlsSaveBtn" style="background:#00b050;color:#000;border:none;font-family:Rajdhani,sans-serif;font-weight:700;font-size:13px;letter-spacing:.1em;padding:10px 20px;border-radius:3px;cursor:pointer">&#11014; GUARDAR EN MI DB</button>
+            <button onclick="xlsReset()" style="background:none;border:1px solid #2a4a64;color:#5a7a90;font-family:Share Tech Mono,monospace;font-size:10px;padding:10px 14px;border-radius:3px;cursor:pointer">&#10005; CANCELAR</button>
+            <span style="font-family:Share Tech Mono,monospace;font-size:10px;color:#5a7a90;margin-left:auto">Solo actualiza tu DB local &#8212; no afecta a otros usuarios</span>
+          </div>
+        </div>
+        <div id="xlsDone" style="display:none;text-align:center;padding:24px 0">
+          <div style="font-size:40px;margin-bottom:10px">&#9989;</div>
+          <div style="font-family:Orbitron,monospace;font-size:12px;letter-spacing:.15em;color:#00e676;margin-bottom:6px" id="xlsDoneMsg"></div>
+          <div style="font-family:Share Tech Mono,monospace;font-size:10px;color:#5a7a90;margin-bottom:14px">Tu DB local fue actualizada correctamente</div>
+          <button onclick="xlsReset()" style="background:#00b050;color:#000;border:none;font-family:Rajdhani,sans-serif;font-weight:700;font-size:12px;letter-spacing:.1em;padding:9px 18px;border-radius:3px;cursor:pointer">IMPORTAR OTRO ARCHIVO</button>
+        </div>
+      </div>
+    </div>
+    <!-- ═══ FIN XLS IMPORT ═══ -->
+
+    <div class="admin-wrap">
+      <div class="admin-header">
+        <h2>&#9881; ADMINISTRADOR DE BASE DE DATOS</h2>
+        <p>Agrega, edita o elimina tickers manualmente. Los cambios se guardan en tu DB local.</p>
+      </div>
+      <div class="admin-form">
+        <h3 id="formTitle">&#9672; AGREGAR NUEVO TICKER</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>TICKER *</label><input id="f_ticker" type="text" placeholder="Ej: NVDA" maxlength="6" style="text-transform:uppercase"></div>
+          <div class="form-group"><label>EMPRESA *</label><input id="f_company" type="text" placeholder="Ej: NVIDIA Corporation"></div>
+          <div class="form-group"><label>RANGO OPTIMO *</label><input id="f_range" type="text" placeholder="$80 - $170"></div>
+          <div class="form-group"><label>LIMITES MIN/MAX *</label><input id="f_limits" type="text" placeholder="MIN $75 MAX $175"></div>
+          <div class="form-group"><label>FECHA ANALISIS *</label><input id="f_date" type="text" placeholder="junio 03 2026"></div>
+          <div class="form-group"><label>BOLSA *</label>
+            <select id="f_exchange"><option value="NASD">NASD</option><option value="NYSE">NYSE</option></select></div>
+          <div class="form-group"><label>SECTOR *</label>
+            <select id="f_sector">
+              <option>TECHNOLOGY</option><option>SEMICONDUCTORS</option><option>SOFTWARE - APP</option>
+              <option>CONSUMER</option><option>INDEX - USA</option><option>CARDS</option>
+              <option>CHINA</option><option>COMMODITY</option><option>FINANCIAL / DATA</option>
+              <option>HEALTHCARE</option><option>INDUSTRIALS</option><option>NUCLEAR ENERGY</option>
+              <option>CRUISES</option><option>AERONAUTICAL</option>
+            </select></div>
+          <div class="form-group"><label>SUB-SECTOR *</label><input id="f_subsector" type="text" placeholder="Technology / Semiconductors"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-search" onclick="saveEntry()">&#10022; GUARDAR</button>
+          <button class="btn btn-amber" onclick="clearForm()" id="cancelBtn" style="display:none">&#10005; CANCELAR</button>
+          <span class="edit-mode-banner" id="editBanner">&#9998; MODO EDICION</span>
+        </div>
+      </div>
+      <div class="admin-search">
+        <input id="adminSearch" type="text" placeholder="Buscar ticker o empresa..." oninput="renderTable()">
+        <span class="admin-count" id="adminCount"></span>
+      </div>
+      <div class="admin-table-wrap">
+        <table>
+          <thead><tr>
+            <th>TICKER</th><th>EMPRESA</th><th>RANGO</th><th>LIMITES</th>
+            <th>FECHA</th><th>SECTOR</th><th>BOLSA</th><th>ACCIONES</th>
+          </tr></thead>
+          <tbody id="adminTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <h3>&#9888; CONFIRMAR ELIMINACION</h3>
+    <p>Eliminar el ticker<br><span class="modal-ticker" id="modalTicker"></span><br>No se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="confirmDelete()">ELIMINAR</button>
+      <button class="btn btn-edit" onclick="closeModal()">CANCELAR</button>
+    </div>
+  </div>
+</div>
+<div class="notif" id="notif"></div>
+
+<script>
+const SUPA_URL="https://bttlshvtlimwlrullrvw.supabase.co";
+const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0dGxzaHZ0bGltd2xydWxscnZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDkwMjYsImV4cCI6MjA5NjYyNTAyNn0.G71GMcD6Wr08Hw7cuox2Ev86Xp-q-0Sjlmmfxm2PaPg";
+const supa=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+let LANG=localStorage.getItem("rdaid_lang")||"es";
+
+function setLang(lang){
+  LANG=lang;localStorage.setItem("rdaid_lang",lang);
+  document.getElementById("btn-es").classList.toggle("active",lang==="es");
+  document.getElementById("btn-en").classList.toggle("active",lang==="en");
+}
+
+function switchAuthTab(tab){
+  document.getElementById("loginForm").style.display=tab==="login"?"block":"none";
+  document.getElementById("registerForm").style.display=tab==="register"?"block":"none";
+  document.querySelectorAll(".auth-tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("tab-"+tab).classList.add("active");
+  clearAuthMessages();
+}
+function clearAuthMessages(){
+  document.getElementById("authError").classList.remove("show");
+  document.getElementById("authSuccess").classList.remove("show");
+}
+function showAuthError(msg){const el=document.getElementById("authError");el.textContent=msg;el.classList.add("show");document.getElementById("authSuccess").classList.remove("show");}
+function showAuthSuccess(msg){const el=document.getElementById("authSuccess");el.textContent=msg;el.classList.add("show");document.getElementById("authError").classList.remove("show");}
+
+async function doLogin(){
+  const email=document.getElementById("loginEmail").value.trim();
+  const pass=document.getElementById("loginPass").value;
+  if(!email||!pass){showAuthError("Completa todos los campos");return}
+  const{error}=await supa.auth.signInWithPassword({email,password:pass});
+  if(error){showAuthError("Error: "+error.message);return}
+}
+async function doRegister(){
+  const email=document.getElementById("regEmail").value.trim();
+  const pass=document.getElementById("regPass").value;
+  const pass2=document.getElementById("regPass2").value;
+  if(!email||!pass||!pass2){showAuthError("Completa todos los campos");return}
+  if(pass!==pass2){showAuthError("Las contrasenas no coinciden");return}
+  const{error}=await supa.auth.signUp({email,password:pass});
+  if(error){showAuthError("Error: "+error.message);return}
+  showAuthSuccess("Cuenta creada. Revisa tu correo para verificar.");
+}
+async function doForgot(){
+  const email=document.getElementById("loginEmail").value.trim();
+  if(!email){showAuthError("Escribe tu correo primero");return}
+  const{error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:"https://pricerange.pulcall.com"});
+  if(error){showAuthError("Error al enviar correo");return}
+  showAuthSuccess("Revisa tu correo para restablecer tu contrasena");
+}
+async function doLogout(){
+  await supa.auth.signOut();
+  document.getElementById("appScreen").style.display="none";
+  document.getElementById("authScreen").style.display="flex";
+}
+
+supa.auth.onAuthStateChange((event,session)=>{
+  if(session){
+    document.getElementById("authScreen").style.display="none";
+    document.getElementById("appScreen").style.display="block";
+    document.getElementById("userEmail").textContent=session.user.email;
+    initApp();
+  } else {
+    document.getElementById("authScreen").style.display="flex";
+    document.getElementById("appScreen").style.display="none";
+  }
+});
+
+const DEFAULT_DB={
+"AMZN":["$140 - $230","MIN $130 MAX $240","mayo 19 2026","TECHNOLOGY","Consumer Cyclical | Internet Retail","NASD","Amazon.com, Inc."],
+"AAPL":["$35 - $90","MIN $30 MAX $100","mayo 19 2026","TECHNOLOGY","Technology | Consumer Electronics","NASD","Apple Inc."],
+"GOOG":["$60 - $170","MIN $50 MAX $170","mayo 19 2026","TECHNOLOGY","Communication Services | Internet Content","NASD","Alphabet Inc."],
+"META":["$150 - $210","MIN $145 MAX $220","mayo 19 2026","TECHNOLOGY","Communication Services | Internet Content","NASD","Meta Platforms, Inc."],
+"MSFT":["$60 - $120","MIN $50 MAX $130","mayo 19 2026","TECHNOLOGY","Technology | Software - Infrastructure","NASD","Microsoft Corporation"],
+"NFLX":["$40 - $80","MIN $35 MAX $85","mayo 19 2026","TECHNOLOGY","Communication Services | Entertainment","NASD","Netflix, Inc."],
+"TSLA":["$100 - $250","MIN $90 MAX $250","mayo 19 2026","TECHNOLOGY","Consumer Cyclical | Auto Manufacturers","NASD","Tesla, Inc."],
+"PLTR":["$140 - $300","MIN $135 MAX $310","mayo 19 2026","TECHNOLOGY","Technology | Software - Infrastructure","NASD","Palantir Technologies Inc."],
+"ORCL":["$80 - $130","MIN $70 MAX $140","mayo 19 2026","TECHNOLOGY","Technology | Software - Infrastructure","NASD","Oracle Corporation"],
+"AMD":["$150 - $235","MIN $140 MAX $240","mayo 19 2026","SEMICONDUCTORS","Technology | Semiconductors","NASD","Advanced Micro Devices, Inc."],
+"MU":["$400 - $600","MIN $400 MAX $650","mayo 19 2026","SEMICONDUCTORS","Technology | Semiconductors","NASD","Micron Technology, Inc."],
+"NVDA":["$80 - $170","MIN $75 MAX $175","febrero 17 2026","SEMICONDUCTORS","Technology | Semiconductors","NASD","NVIDIA Corporation"],
+"QCOM":["$80 - $160","MIN $70 MAX $170","mayo 19 2026","SEMICONDUCTORS","Technology | Semiconductors","NASD","Qualcomm, Inc."],
+"AVGO":["$70 - $140","MIN $65 MAX $145","mayo 19 2026","SEMICONDUCTORS","Technology | Semiconductors","NASD","Broadcom Inc."],
+"SOXL":["$150 - $240","MIN $120 MAX $250","mayo 19 2026","SEMICONDUCTORS","Technology | Semiconductors","NASD","Direxion Daily Semiconductor Bull 3X"],
+"DASH":["$160 - $240","MIN $155 MAX $245","mayo 19 2026","SOFTWARE - APP","Communication Services | Internet Content","NYSE","DoorDash, Inc."],
+"LYFT":["$25 - $50","MIN $25 MAX $55","mayo 19 2026","SOFTWARE - APP","Technology | Software - Application","NASD","Lyft, Inc."],
+"UBER":["$35 - $60","MIN $30 MAX $65","mayo 19 2026","SOFTWARE - APP","Technology | Software - Application","NYSE","Uber Technologies, Inc."],
+"HD":["$120 - $240","MIN $120 MAX $240","mayo 19 2026","CONSUMER","Consumer Cyclical | Home Improvement Retail","NYSE","The Home Depot, Inc."],
+"LOW":["$120 - $220","MIN $110 MAX $225","mayo 19 2026","CONSUMER","Consumer Cyclical | Home Improvement Retail","NYSE","Lowe's Companies, Inc."],
+"WMT":["$60 - $110","MIN $55 MAX $115","febrero 17 2026","CONSUMER","Consumer Defensive | Discount Stores","NYSE","Walmart Inc."],
+"DIA":["$100 - $200","MIN $95 MAX $210","mayo 19 2026","INDEX - USA","Financial | Exchange Traded Fund","NYSE","SPDR Dow Jones Industrial Average ETF Trust"],
+"QQQ":["$35 - $55","MIN $30 MAX $60","mayo 19 2026","INDEX - USA","Financial | Exchange Traded Fund","NASD","Invesco QQQ Trust"],
+"SPY":["$30 - $45","MIN $25 MAX $50","mayo 19 2026","INDEX - USA","Financial | Exchange Traded Fund","NYSE","SPDR S&P 500 ETF Trust"],
+"SPX":["$400 - $600","MIN $380 MAX $620","mayo 19 2026","INDEX - USA","Financial | Exchange Traded Fund","NYSE","S&P 500 Index"],
+"IWM":["$40 - $70","MIN $35 MAX $70","mayo 19 2026","INDEX - USA","Financial | Exchange Traded Fund","NYSE","iShares Russell 2000 ETF"],
+"TNA":["$40 - $90","MIN $40 MAX $100","mayo 19 2026","INDEX - USA","Financial | Exchange Traded Fund","NYSE","Direxion Daily Small Cap Bull 3X Shares"],
+"AXP":["$85 - $190","MIN $80 MAX $195","mayo 19 2026","CARDS","Financial | Credit Services","NYSE","American Express Company"],
+"C":["$50 - $140","MIN $45 MAX $150","mayo 19 2026","CARDS","Financial | Credit Services","NYSE","Citigroup Inc."],
+"MA":["$90 - $175","MIN $85 MAX $180","mayo 19 2026","CARDS","Financial | Credit Services","NYSE","Mastercard Incorporated"],
+"PYPL":["$50 - $80","MIN $40 MAX $90","mayo 19 2026","CARDS","Financial | Credit Services","NASD","PayPal Holdings, Inc."],
+"V":["$60 - $170","MIN $55 MAX $175","mayo 19 2026","CARDS","Financial | Credit Services","NYSE","Visa Inc."],
+"BABA":["$40 - $60","MIN $40 MAX $70","mayo 19 2026","CHINA","Consumer Cyclical | Internet Retail","NYSE","Alibaba Group Holding Limited"],
+"LI":["$25 - $60","MIN $25 MAX $70","mayo 19 2026","CHINA","Consumer Cyclical | Auto Manufacturers","NASD","Li Auto Inc."],
+"NIO":["$30 - $75","MIN $25 MAX $75","mayo 19 2026","CHINA","Consumer Cyclical | Auto Manufacturers","NYSE","NIO Inc."],
+"XPEV":["$50 - $70","MIN $45 MAX $75","mayo 19 2026","CHINA","Consumer Cyclical | Auto Manufacturers","NYSE","XPeng Inc."],
+"GLD":["$40 - $80","MIN $40 MAX $90","mayo 19 2026","COMMODITY","Financial | Closed-End Fund - Equity","NYSE","The GDL Fund"],
+"SLV":["$40 - $75","MIN $35 MAX $80","mayo 19 2026","COMMODITY","Financial | Exchange Traded Fund","NYSE","iShares Silver Trust"],
+"USO":["$50 - $80","MIN $45 MAX $90","mayo 19 2026","COMMODITY","Financial | Exchange Traded Fund","NYSE","United States Oil Fund, LP"],
+"COIN":["$200 - $300","MIN $195 MAX $310","mayo 19 2026","FINANCIAL / DATA","Financial | Financial Data & Stock Exchanges","NASD","Coinbase Global, Inc."],
+"HOOD":["$100 - $150","MIN $90 MAX $160","mayo 19 2026","FINANCIAL / DATA","Financial | Financial Data & Stock Exchanges","NASD","Robinhood Markets Inc."],
+"CVS":["$60 - $120","MIN $55 MAX $130","mayo 19 2026","HEALTHCARE","Healthcare | Healthcare Plans","NYSE","CVS Health Corporation"],
+"MRNA":["$50 - $130","MIN $50 MAX $130","mayo 19 2026","HEALTHCARE","Healthcare | Biotechnology","NASD","Moderna, Inc."],
+"PFE":["$30 - $70","MIN $25 MAX $75","mayo 19 2026","HEALTHCARE","Healthcare | Drug Manufacturers - General","NYSE","Pfizer Inc."],
+"BA":["$60 - $170","MIN $50 MAX $180","mayo 19 2026","INDUSTRIALS","Industrials | Aerospace & Defense","NYSE","The Boeing Company"],
+"URA":["$55 - $80","MIN $55 MAX $85","mayo 19 2026","NUCLEAR ENERGY","Financial | Exchange Traded Fund","NYSE","Global X Uranium ETF"],
+"CCL":["$40 - $60","MIN $35 MAX $65","mayo 19 2026","CRUISES","Consumer Cyclical | Travel Services","NYSE","Carnival Corporation & plc"],
+"RCL":["$80 - $150","MIN $75 MAX $155","mayo 19 2026","CRUISES","Consumer Cyclical | Travel Services","NYSE","Royal Caribbean Cruises Ltd."],
+"AAL":["$40 - $70","MIN $30 MAX $70","mayo 19 2026","AERONAUTICAL","Industrials | Airlines","NYSE","American Airlines Group Inc."],
+"DAL":["$40 - $65","MIN $35 MAX $70","mayo 19 2026","AERONAUTICAL","Consumer Cyclical | Travel Services","NYSE","Delta Air Lines, Inc."]
+};
+
+const SC={"TECHNOLOGY":"#00e676","SEMICONDUCTORS":"#00e5ff","SOFTWARE - APP":"#2979ff","CONSUMER":"#ffab00","INDEX - USA":"#e040fb","CARDS":"#ff6d00","CHINA":"#ff3d57","COMMODITY":"#ffd600","FINANCIAL / DATA":"#00b0ff","HEALTHCARE":"#69f0ae","INDUSTRIALS":"#b0bec5","NUCLEAR ENERGY":"#ff9100","CRUISES":"#00e5ff","AERONAUTICAL":"#8ab0c8"};
+
+function lDB(){try{const s=localStorage.getItem("rdaid_db");return s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_DB))}catch{return JSON.parse(JSON.stringify(DEFAULT_DB))}}
+function sDB(d){localStorage.setItem("rdaid_db",JSON.stringify(d))}
+let DB=lDB();
+let af="ALL",ct=null,em=false,dt=null;
+let currentUser=null;
+
+async function initApp(){
+  const{data:{user}}=await supa.auth.getUser();
+  currentUser=user;
+  DB=lDB();
+  applyLayout();
+  buildSF();
+  await renderWL();
+}
+
+function applyLayout(){
+  const g=document.getElementById("mainGrid");
+  if(g)g.style.display=window.innerWidth>=700?"grid":"block";
+}
+window.addEventListener("resize",applyLayout);
+
+function switchTab(tab,el){
+  document.querySelectorAll(".tab-page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(x=>x.classList.remove("active"));
+  document.getElementById("tab-"+tab).classList.add("active");
+  el.classList.add("active");
+  if(tab==="admin")renderTable();
+}
+
+function buildSF(){
+  const sectors=["ALL",...Object.keys(SC)];
+  const w=document.getElementById("sectorFilters");
+  if(!w)return;
+  w.innerHTML="";
+  sectors.forEach(x=>{
+    const p=document.createElement("button");
+    p.className="sf-pill"+(x===af?" active":"");
+    p.textContent=x;
+    if(x!=="ALL")p.style.borderColor=SC[x]+"55";
+    p.onclick=()=>{af=x;buildSF();renderWL()};
+    w.appendChild(p);
+  });
+}
+
+function buscar(ticker){
+  const tk=(ticker||document.getElementById("tickerInput").value).trim().toUpperCase();
+  if(!tk)return;
+  document.getElementById("tickerInput").value=tk;
+  DB=lDB();
+  if(!DB[tk]){notify("TICKER NO ENCONTRADO: "+tk,"warning");return}
+  ct=tk;
+  const r=DB[tk],c=SC[r[3]]||"#00e676";
+  const panel=document.getElementById("resultPanel");
+  panel.classList.remove("empty");
+  document.getElementById("emptyState").style.display="none";
+  const co=document.getElementById("resultContent");
+  co.style.display="block";
+  co.innerHTML=`<div class="res-header"><div><div class="res-ticker">${tk}</div><div class="res-company">${r[6]}</div></div><div style="text-align:right;flex-shrink:0"><div class="res-badge" style="color:${c};border-color:${c}44;background:${c}12">${r[3]}</div><div class="res-exch">${r[5]} &middot; ${r[4]}</div></div></div><div class="data-grid"><div class="data-card"><div class="dc-label">&#9672; RANGO OPTIMO</div><div class="dc-value green">${r[0]}</div><div class="range-bar-wrap"><div class="range-bar"></div></div></div><div class="data-card"><div class="dc-label">&#9672; LIMITES HARD</div><div class="dc-value amber">${r[1]}</div></div><div class="data-card"><div class="dc-label">&#9672; FECHA ANALISIS</div><div class="dc-value cyan small">${r[2].toUpperCase()}</div></div><div class="data-card"><div class="dc-label">&#9672; BOLSA</div><div class="dc-value small" style="color:#b0bec5">${r[5]}</div></div><div class="data-card full"><div class="dc-label">&#9672; SECTOR</div><div class="dc-value small" style="color:${c}">${r[3]} &middot; ${r[4]}</div></div></div>`;
+  renderWL();
+  if(window.innerWidth<700)panel.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function guardar(){
+  const tk=document.getElementById("tickerInput").value.trim().toUpperCase();
+  DB=lDB();
+  if(!DB[tk]){notify("TICKER INVALIDO","warning");return}
+  if(!currentUser)return;
+  const existing=await lF();
+  if(existing.includes(tk)){notify(tk+" YA ESTA EN WATCHLIST","warning");return}
+  await supa.from("watchlist").insert({user_id:currentUser.id,ticker:tk});
+  renderWL();
+  notify(tk+" AGREGADO A WATCHLIST","success");
+}
+
+async function lF(){
+  if(!currentUser)return[];
+  try{
+    const{data,error}=await supa.from("watchlist").select("ticker").eq("user_id",currentUser.id).order("created_at",{ascending:true});
+    if(error)return[];
+    return data.map(r=>r.ticker);
+  }catch{return[]}
+}
+
+async function renderWL(){
+  DB=lDB();
+  const all=await lF();
+  const f=all.filter(tk=>af==="ALL"||(DB[tk]&&DB[tk][3]===af));
+  const w=document.getElementById("watchlistItems");
+  document.getElementById("wlCount").textContent=all.length;
+  if(!f.length){w.innerHTML='<div class="wl-empty">-</div>';return}
+  w.innerHTML="";
+  f.forEach(tk=>{
+    const r=DB[tk];const c=SC[r?.[3]]||"#00e676";
+    const d=document.createElement("div");
+    d.className="wl-item"+(tk===ct?" active":"");
+    d.innerHTML=`<div onclick="buscar('${tk}')" style="flex:1;cursor:pointer"><div class="wl-ticker" style="color:${c}">${tk}</div><div class="wl-sector">${r?.[3]||""}</div></div><button class="wl-del" onclick="delWL('${tk}')">&#10005;</button>`;
+    w.appendChild(d);
+  });
+}
+
+async function delWL(tk){
+  if(!currentUser)return;
+  await supa.from("watchlist").delete().eq("user_id",currentUser.id).eq("ticker",tk);
+  renderWL();
+  notify(tk+" ELIMINADO","warning");
+}
+
+function clearForm(){
+  em=false;
+  document.getElementById("formTitle").textContent="&#9672; AGREGAR NUEVO TICKER";
+  document.getElementById("editBanner").classList.remove("show");
+  document.getElementById("cancelBtn").style.display="none";
+  ["f_ticker","f_company","f_range","f_limits","f_date","f_subsector"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("f_ticker").disabled=false;
+  document.getElementById("f_exchange").value="NASD";
+  document.getElementById("f_sector").value="TECHNOLOGY";
+}
+
+function editEntry(ticker){
+  DB=lDB();const r=DB[ticker];if(!r)return;
+  document.querySelectorAll(".tab-page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(x=>x.classList.remove("active"));
+  document.getElementById("tab-admin").classList.add("active");
+  document.querySelectorAll(".nav-tab")[1].classList.add("active");
+  renderTable();em=true;
+  document.getElementById("formTitle").textContent="&#9998; EDITANDO: "+ticker;
+  document.getElementById("editBanner").classList.add("show");
+  document.getElementById("cancelBtn").style.display="inline-flex";
+  document.getElementById("f_ticker").value=ticker;
+  document.getElementById("f_ticker").disabled=true;
+  document.getElementById("f_range").value=r[0];
+  document.getElementById("f_limits").value=r[1];
+  document.getElementById("f_date").value=r[2];
+  document.getElementById("f_sector").value=r[3];
+  document.getElementById("f_subsector").value=r[4];
+  document.getElementById("f_exchange").value=r[5];
+  document.getElementById("f_company").value=r[6];
+  document.getElementById("f_ticker").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function saveEntry(){
+  const ticker=document.getElementById("f_ticker").value.trim().toUpperCase();
+  const company=document.getElementById("f_company").value.trim();
+  const range=document.getElementById("f_range").value.trim();
+  const limits=document.getElementById("f_limits").value.trim();
+  const date=document.getElementById("f_date").value.trim();
+  const sector=document.getElementById("f_sector").value;
+  const subsector=document.getElementById("f_subsector").value.trim();
+  const exchange=document.getElementById("f_exchange").value;
+  if(!ticker||!company||!range||!limits||!date||!subsector){notify("COMPLETA TODOS LOS CAMPOS","warning");return}
+  DB=lDB();
+  if(!em&&DB[ticker]){notify(ticker+" YA EXISTE — USA EDITAR","warning");return}
+  DB[ticker]=[range,limits,date,sector,subsector,exchange,company];
+  sDB(DB);buildSF();renderWL();renderTable();
+  notify(ticker+" "+(em?"ACTUALIZADO":"AGREGADO"),"success");
+  clearForm();
+}
+
+function renderTable(){
+  DB=lDB();
+  const q=(document.getElementById("adminSearch")?.value||"").toLowerCase();
+  const tickers=Object.keys(DB).filter(tk=>tk.toLowerCase().includes(q)||DB[tk][6].toLowerCase().includes(q)||DB[tk][3].toLowerCase().includes(q)).sort();
+  document.getElementById("adminCount").textContent=tickers.length+" tickers";
+  const tb=document.getElementById("adminTbody");tb.innerHTML="";
+  tickers.forEach(tk=>{
+    const r=DB[tk];const c=SC[r[3]]||"#aaa";
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td><span class="td-ticker" style="color:${c}">${tk}</span></td><td><span class="td-company">${r[6]}</span></td><td><span class="td-range">${r[0]}</span></td><td><span class="td-limits">${r[1]}</span></td><td><span class="td-date">${r[2]}</span></td><td><span style="color:${c};background:${c}18;border:1px solid ${c}44;font-family:Share Tech Mono,monospace;font-size:10px;padding:3px 8px;border-radius:2px">${r[3]}</span></td><td style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--textdim)">${r[5]}</td><td><div class="td-actions"><button class="tbl-btn tbl-edit" onclick="editEntry('${tk}')">&#9998;</button><button class="tbl-btn tbl-del" onclick="promptDel('${tk}')">&#10005;</button></div></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function promptDel(tk){dt=tk;document.getElementById("modalTicker").textContent=tk;document.getElementById("confirmModal").classList.add("show")}
+function closeModal(){dt=null;document.getElementById("confirmModal").classList.remove("show")}
+function confirmDelete(){
+  if(!dt)return;DB=lDB();delete DB[dt];sDB(DB);
+  supa.from("watchlist").delete().eq("ticker",dt).eq("user_id",currentUser?.id);
+  notify(dt+" ELIMINADO","warning");dt=null;closeModal();renderTable();renderWL();buildSF();
+}
+
+function showAllTickers(){
+  DB=lDB();const tickers=Object.keys(DB).sort();
+  const list=tickers.map(tk=>`<span onclick="buscar('${tk}');document.getElementById('tickerModal')?.remove()" style="display:inline-block;padding:6px 13px;margin:3px;cursor:pointer;font-family:Orbitron,monospace;font-size:11px;color:${SC[DB[tk][3]]||"#00e676"};border:1px solid ${SC[DB[tk][3]]||"#00e676"}44;border-radius:2px;background:${SC[DB[tk][3]]||"#00e676"}0d">${tk}</span>`).join("");
+  let m=document.getElementById("tickerModal");if(m){m.remove();return}
+  m=document.createElement("div");m.id="tickerModal";
+  m.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0d1520;border:1px solid #2a4a64;border-radius:6px;padding:20px;max-width:660px;width:92%;z-index:9000;max-height:75vh;overflow-y:auto;box-shadow:0 0 60px rgba(0,0,0,.9)";
+  m.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-family:Orbitron,monospace;font-size:13px;letter-spacing:.15em;color:#00e5ff">TODOS LOS TICKERS (${tickers.length})</span><button onclick="document.getElementById('tickerModal').remove()" style="background:none;border:none;color:#8aacbe;font-size:22px;cursor:pointer">&#10005;</button></div><div>${list}</div>`;
+  document.body.appendChild(m);
+}
+
+function notify(msg,type="success"){
+  const n=document.getElementById("notif");n.textContent=msg;n.className="notif "+type+" show";
+  setTimeout(()=>n.classList.remove("show"),2800);
+}
+
+document.getElementById("tickerInput")?.addEventListener("keydown",e=>{if(e.key==="Enter")buscar()});
+document.getElementById("confirmModal")?.addEventListener("click",e=>{if(e.target===e.currentTarget)closeModal()});
+document.getElementById("loginPass")?.addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+document.getElementById("regPass2")?.addEventListener("keydown",e=>{if(e.key==="Enter")doRegister()});
+
+// ══════════════════════════════════════════════
+// XLS / EXCEL IMPORT
+// ══════════════════════════════════════════════
+var xlsData=[];
+var xlsSelected=[];
+var XLS_SC={"TECHNOLOGY":"#00e676","SEMICONDUCTORS":"#00e5ff","SOFTWARE - APP":"#2979ff","CONSUMER":"#ffab00","INDEX - USA":"#e040fb","CARDS":"#ff6d00","CHINA":"#ff3d57","COMMODITY":"#ffd600","FINANCIAL / DATA":"#00b0ff","HEALTHCARE":"#69f0ae","HEALTCARE":"#69f0ae","INDUSTRIALS":"#b0bec5","NUCLEAR ENERGY":"#ff9100","CRUISES":"#00e5ff","AERONAUTICAL":"#8ab0c8"};
+
+function xlsShow(id){
+  ["xlsIdle","xlsProcessing","xlsPreview","xlsDone"].forEach(function(x){
+    var el=document.getElementById(x);
+    if(el)el.style.display=(x===id?"block":"none");
+  });
+}
+
+function handleXlsFile(file){
+  if(!file)return;
+  xlsShow("xlsProcessing");
+  document.getElementById("xlsProcLabel").textContent="LEYENDO ARCHIVO...";
+  document.getElementById("xlsLog").innerHTML="";
+  xlsAddLog("&#128196; "+file.name+" ("+Math.round(file.size/1024)+" KB)");
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var content=e.target.result;
+      xlsAddLog("&#10003; Archivo cargado — analizando estructura...");
+      var rows=[];
+      if(typeof content==="string"&&content.indexOf("<table")>=0){
+        rows=xlsParseHtml(content);
+      } else if(typeof content==="string"){
+        rows=xlsParseCSV(content);
+      } else {
+        notify("Formato no compatible. Usa .xls de Excel/Google Sheets","warning");
+        xlsShow("xlsIdle");return;
+      }
+      if(rows.length<2){notify("No se encontraron datos","warning");xlsShow("xlsIdle");return;}
+      var header=rows[0].map(function(h){return h.toLowerCase().trim();});
+      xlsAddLog("&#10003; "+(rows.length-1)+" filas detectadas");
+      var ci=xlsDetectCols(header);
+      xlsAddLog("&#10003; Columnas mapeadas correctamente");
+      var parsed=[];
+      for(var i=1;i<rows.length;i++){
+        var row=rows[i];
+        if(!row[ci.ticker])continue;
+        var tk=row[ci.ticker].trim().toUpperCase();
+        if(!tk||tk==="TICKER")continue;
+        parsed.push({
+          ticker:tk,
+          company:(row[ci.company]||"").trim(),
+          range_optimal:(row[ci.range_optimal]||"").trim(),
+          range_limits:(row[ci.range_limits]||"").trim(),
+          analysis_date:xlsFmtDate((row[ci.analysis_date]||"").trim()),
+          sector:(row[ci.sector]||"").trim().toUpperCase(),
+          subsector:(row[ci.subsector]||"").trim(),
+          exchange:(row[ci.exchange]||"NASD").trim().toUpperCase()
+        });
+      }
+      if(!parsed.length){notify("No se encontraron tickers validos","warning");xlsShow("xlsIdle");return;}
+      xlsAddLog("&#9989; "+parsed.length+" tickers listos para importar");
+      xlsData=parsed;
+      xlsSelected=parsed.map(function(){return true;});
+      setTimeout(xlsShowPreview,300);
+    }catch(err){
+      notify("Error: "+err.message,"warning");xlsShow("xlsIdle");
+    }
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
+function xlsParseHtml(html){
+  var rows=[];
+  var trRe=/<tr[^>]*>([\s\S]*?)<\/tr>/gi;var m;
+  while((m=trRe.exec(html))!==null){
+    var cells=[];
+    var cellRe=/<(th|td)[^>]*>([\s\S]*?)<\/(th|td)>/gi;var cm;
+    while((cm=cellRe.exec(m[0]))!==null){
+      cells.push(cm[2].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&nbsp;/g," ").trim());
+    }
+    if(cells.length>0)rows.push(cells);
+  }
+  return rows;
+}
+
+function xlsParseCSV(text){
+  return text.split("\n").filter(function(l){return l.trim();}).map(function(line){
+    var cells=[];var cur="";var inQ=false;
+    for(var i=0;i<line.length;i++){
+      var c=line[i];
+      if(c==='"'&&!inQ){inQ=true;}
+      else if(c==='"'&&inQ){inQ=false;}
+      else if(c===','&&!inQ){cells.push(cur.trim());cur="";}
+      else cur+=c;
+    }
+    cells.push(cur.trim());return cells;
+  });
+}
+
+function xlsDetectCols(header){
+  function find(keys){
+    for(var k=0;k<keys.length;k++){
+      var idx=-1;
+      for(var j=0;j<header.length;j++){if(header[j].indexOf(keys[k])>=0){idx=j;break;}}
+      if(idx>=0)return idx;
+    }
+    return -1;
+  }
+  return{
+    ticker:   Math.max(0,find(["ticker","symbol"])),
+    range_optimal: Math.max(1,find(["rango","range opt","optimal","ptimo"])),
+    range_limits:  Math.max(2,find(["nimo y m","min","limit","nimo"])),
+    analysis_date: Math.max(3,find(["fecha","date","lisis"])),
+    sector:   Math.max(4,find(["bloque","sector"])),
+    subsector:Math.max(5,find(["sectores","subsector","sub"])),
+    exchange: Math.max(6,find(["ndice","indice","exchange","bolsa"])),
+    company:  Math.max(7,find(["nombre","company","empresa","name"]))
+  };
+}
+
+function xlsFmtDate(d){
+  if(!d)return"";
+  if(/[a-zA-Z]/.test(d))return d;
+  var m=d.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(m){
+    var months=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    return months[parseInt(m[2])-1]+" "+m[3]+" "+m[1];
+  }
+  return d;
+}
+
+function xlsAddLog(msg){
+  var el=document.getElementById("xlsLog");
+  if(el)el.innerHTML+=(el.innerHTML?"\n":"")+msg;
+}
+
+function xlsShowPreview(){
+  xlsShow("xlsPreview");
+  xlsRenderTable();
+  xlsUpdateCount();
+  var sum=document.getElementById("xlsSummary");
+  if(sum)sum.textContent=xlsData.length+" TICKERS DETECTADOS";
+}
+
+function xlsRenderTable(){
+  var tb=document.getElementById("xlsTbody");
+  if(!tb)return;
+  tb.innerHTML="";
+  xlsData.forEach(function(r,i){
+    var c=XLS_SC[r.sector]||"#aaa";
+    var tr=document.createElement("tr");
+    tr.style.borderBottom="1px solid rgba(42,74,100,.3)";
+    tr.style.background=xlsSelected[i]?"rgba(0,230,118,.04)":"transparent";
+    tr.style.opacity=xlsSelected[i]?"1":".35";
+    tr.innerHTML='<td style="padding:7px 10px"><input type="checkbox"'+(xlsSelected[i]?" checked":"")+' onchange="xlsToggle('+i+')" style="accent-color:#00e676;width:13px;height:13px"></td>'
+      +'<td style="padding:7px 10px"><span style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:'+c+'">'+r.ticker+'</span></td>'
+      +'<td style="padding:7px 10px;color:#8ab0c8;font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.company+'</td>'
+      +'<td style="padding:7px 10px;color:#00e676;font-family:Rajdhani,sans-serif;font-weight:700">'+r.range_optimal+'</td>'
+      +'<td style="padding:7px 10px;color:#ffab00;font-family:Rajdhani,sans-serif;font-size:12px">'+r.range_limits+'</td>'
+      +'<td style="padding:7px 10px;font-family:Share Tech Mono,monospace;font-size:10px;color:#5a7a90;white-space:nowrap">'+r.analysis_date+'</td>'
+      +'<td style="padding:7px 10px"><span style="font-size:10px;color:'+c+';background:'+c+'18;border:1px solid '+c+'44;padding:2px 7px;border-radius:2px;font-family:monospace">'+r.sector+'</span></td>'
+      +'<td style="padding:7px 10px;font-family:Share Tech Mono,monospace;font-size:10px;color:#5a7a90">'+r.exchange+'</td>';
+    tb.appendChild(tr);
+  });
+}
+
+function xlsToggle(i){xlsSelected[i]=!xlsSelected[i];xlsRenderTable();xlsUpdateCount();}
+
+function xlsToggleAll(){
+  var allSel=xlsSelected.every(Boolean);
+  xlsSelected=xlsSelected.map(function(){return !allSel;});
+  xlsRenderTable();xlsUpdateCount();
+  var btn=document.getElementById("xlsToggleBtn");
+  if(btn)btn.textContent=allSel?"SELECT ALL":"DESELECT ALL";
+}
+
+function xlsUpdateCount(){
+  var n=xlsSelected.filter(Boolean).length;
+  var el=document.getElementById("xlsSelCount");
+  if(el)el.textContent=n+" seleccionados";
+  var btn=document.getElementById("xlsSaveBtn");
+  if(btn){btn.innerHTML="&#11014; GUARDAR "+n+" TICKERS EN MI DB";btn.style.opacity=n?"1":".4";btn.disabled=!n;}
+}
+
+function xlsSaveSelected(){
+  var toSave=xlsData.filter(function(_,i){return xlsSelected[i];});
+  if(!toSave.length)return;
+  DB=lDB();
+  toSave.forEach(function(r){
+    DB[r.ticker]=[r.range_optimal,r.range_limits,r.analysis_date,r.sector,r.subsector,r.exchange,r.company];
+  });
+  sDB(DB);
+  buildSF();renderWL();renderTable();
+  var msg=document.getElementById("xlsDoneMsg");
+  if(msg)msg.textContent=toSave.length+" TICKERS GUARDADOS EN TU DB";
+  xlsShow("xlsDone");
+  notify(toSave.length+" tickers importados correctamente","success");
+}
+
+function xlsReset(){
+  xlsData=[];xlsSelected=[];
+  var inp=document.getElementById("xlsInput");if(inp)inp.value="";
+  xlsShow("xlsIdle");
+}
+// ══════════════════════════════════════════════
+</script>
+</body>
+</html>
