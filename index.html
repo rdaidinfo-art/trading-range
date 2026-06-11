@@ -1129,7 +1129,7 @@ function renderQuoteCard(q,zone){
 +'</div>'
 +'<div class="quote-footer">'
 +'<span>Actualizado: '+now+'</span>'
-+'<button class="quote-refresh" onclick="fetchQuote(\''+tk+'\')">&#8635; ACTUALIZAR</button>'
++'<button class="quote-refresh" id="quoteRefreshBtn" data-ticker="'+tk+'">&#8635; ACTUALIZAR</button>'
 +'</div>'
 +'</div>';
 }
@@ -1258,21 +1258,16 @@ function renderFundamentals(json){
   var tk=json.ticker||"";
   var html="";
 
-  // Ticker name header
   if(json.company){
-    html+='<div class="fund-ticker-name">'+tk+' &mdash; <span style="color:var(--textdim);font-family:Rajdhani,sans-serif;font-size:12px">'+json.company+'</span></div>';
+    html+='<div class="fund-ticker-name">'+tk+' — <span style="color:var(--textdim);font-family:Rajdhani,sans-serif;font-size:12px">'+json.company+'</span></div>';
   }
 
-  // FAVORITES section first
   if(fundFavs.length>0){
-    html+='<div class="fund-favs-section">';
-    html+='<div class="fund-favs-title">&#9733; FAVORITOS</div>';
-    html+='<div class="fund-grid">';
+    html+='<div class="fund-favs-section"><div class="fund-favs-title">&#9733; FAVORITOS</div><div class="fund-grid">';
     fundFavs.forEach(function(field){
       var val=d[field]||"-";
       var cls=fundValClass(field,val);
-      var isFav=true;
-      html+='<div class="fund-row fav" onclick="toggleFav(''+field.replace(/'/g,"\'")+'')">'
+      html+='<div class="fund-row fav" data-field="'+field+'">'
         +'<span class="fund-label">'+field+'</span>'
         +'<div style="display:flex;align-items:center;gap:4px">'
         +'<span class="fund-val '+cls+'">'+val+'</span>'
@@ -1282,19 +1277,16 @@ function renderFundamentals(json){
     html+='</div></div>';
   }
 
-  // All groups
   Object.keys(FUND_GROUPS).forEach(function(group){
     var fields=FUND_GROUPS[group];
     var rows=fields.filter(function(f){return d[f]&&d[f]!=="-"&&d[f]!=="N/A";});
     if(!rows.length)return;
-    html+='<div class="fund-group">';
-    html+='<div class="fund-group-title">'+group+'</div>';
-    html+='<div class="fund-grid">';
+    html+='<div class="fund-group"><div class="fund-group-title">'+group+'</div><div class="fund-grid">';
     rows.forEach(function(field){
       var val=d[field]||"-";
       var cls=fundValClass(field,val);
       var isFav=fundFavs.indexOf(field)>=0;
-      html+='<div class="fund-row'+(isFav?" fav":"") +'" onclick="toggleFav(''+field.replace(/'/g,"\'")+'')">'
+      html+='<div class="fund-row'+(isFav?" fav":"") +'" data-field="'+field+'">'
         +'<span class="fund-label">'+field+'</span>'
         +'<div style="display:flex;align-items:center;gap:4px">'
         +'<span class="fund-val '+cls+'">'+val+'</span>'
@@ -1304,10 +1296,17 @@ function renderFundamentals(json){
     html+='</div></div>';
   });
 
-  html+='<div class="fund-hint">&#9733; Click en cualquier campo para marcarlo favorito &mdash; aparece arriba destacado</div>';
-  html+='<div style="font-family:Share Tech Mono,monospace;font-size:8px;color:#2a4a64;text-align:center;margin-top:4px">Fuente: Finviz &mdash; '+new Date().toLocaleTimeString()+'</div>';
+  html+='<div class="fund-hint">&#9733; Click en cualquier campo para marcarlo favorito</div>';
+  html+='<div style="font-family:Share Tech Mono,monospace;font-size:8px;color:#2a4a64;text-align:center;margin-top:4px">Fuente: Finviz — '+new Date().toLocaleTimeString()+'</div>';
 
   body.innerHTML=html;
+
+  // Attach click handlers via data attributes — no inline onclick escaping needed
+  body.querySelectorAll(".fund-row[data-field]").forEach(function(el){
+    el.addEventListener("click", function(){
+      toggleFav(this.getAttribute("data-field"));
+    });
+  });
 }
 
 // Populate select on init and when DB changes
