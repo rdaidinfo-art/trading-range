@@ -153,6 +153,34 @@ tbody td{padding:9px 12px;vertical-align:middle}
 .modal-box .modal-ticker{color:var(--white);font-size:17px;font-weight:700}
 .modal-actions{display:flex;gap:10px;justify-content:center}
 .modal-actions .btn{flex:0 0 auto;padding:10px 22px}
+
+/* QUOTE / BID-ASK */
+.quote-card{background:#060f18;border:1px solid #1a3a54;border-radius:4px;padding:12px 14px;margin-top:10px;position:relative;overflow:hidden}
+.quote-card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.quote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.quote-grid-bot{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.qc{background:#070d14;border:1px solid #1a3050;border-radius:3px;padding:8px 10px;text-align:center}
+.qc-label{font-family:"Share Tech Mono",monospace;font-size:9px;letter-spacing:.12em;color:#5a7a90;margin-bottom:3px}
+.qc-val{font-family:"Rajdhani",sans-serif;font-size:17px;font-weight:700;letter-spacing:.02em}
+.qc-val.up{color:#00e676}.qc-val.dn{color:#ff3d57}.qc-val.neu{color:#b0bec5}
+.qc-val.bid-color{color:#00b0ff}.qc-val.ask-color{color:#ff9100}
+.qc-size{font-family:"Share Tech Mono",monospace;font-size:9px;color:#5a7a90;margin-top:2px}
+.market-badge{display:inline-flex;align-items:center;gap:5px;font-family:"Share Tech Mono",monospace;font-size:10px;padding:3px 9px;border-radius:2px;margin-bottom:8px}
+.market-badge.open{color:#00e676;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3)}
+.market-badge.pre{color:#ffab00;background:rgba(255,171,0,.1);border:1px solid rgba(255,171,0,.3)}
+.market-badge.post{color:#2979ff;background:rgba(41,121,255,.1);border:1px solid rgba(41,121,255,.3)}
+.market-badge.closed{color:#5a7a90;background:rgba(90,122,144,.1);border:1px solid rgba(90,122,144,.3)}
+.market-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.market-dot.open{background:#00e676;box-shadow:0 0 6px #00e676}.market-dot.pre{background:#ffab00}.market-dot.post{background:#2979ff}.market-dot.closed{background:#5a7a90}
+.quote-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-family:"Share Tech Mono",monospace;font-size:9px;color:#3a5a70}
+.quote-refresh{cursor:pointer;color:#2a6a90;padding:3px 6px;border:1px solid #1a3a54;border-radius:2px;background:none;font-family:"Share Tech Mono",monospace;font-size:9px;transition:color .15s}
+.quote-refresh:hover{color:var(--cyan)}
+.quote-loading{text-align:center;padding:18px 0;color:#3a5a70;font-family:"Share Tech Mono",monospace;font-size:10px}
+.quote-err{text-align:center;padding:10px 0;color:#ff3d57;font-family:"Share Tech Mono",monospace;font-size:10px}
+/* WL quote mini */
+.wl-quote{font-family:"Rajdhani",sans-serif;font-size:12px;font-weight:700;text-align:right;line-height:1.3;flex-shrink:0;margin-right:6px}
+.wl-quote .price{color:#e8f4ff}.wl-quote .chg.up{color:#00e676}.wl-quote .chg.dn{color:#ff3d57}.wl-quote .chg.neu{color:#b0bec5}
+
 /* XLS IMPORT */
 .xls-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #2a4a64;border-radius:4px;padding:28px 20px;cursor:pointer;background:#070d14;transition:border-color .2s}
 .xls-drop:hover{border-color:#00e676}
@@ -559,6 +587,7 @@ async function initApp(){
   applyLayout();
   buildSF();
   await renderWL();
+  startQuotePolling();
 }
 
 function applyLayout(){
@@ -604,6 +633,9 @@ function buscar(ticker){
   const co=document.getElementById("resultContent");
   co.style.display="block";
   co.innerHTML=`<div class="res-header"><div><div class="res-ticker">${tk}</div><div class="res-company">${r[6]}</div></div><div style="text-align:right;flex-shrink:0"><div class="res-badge" style="color:${c};border-color:${c}44;background:${c}12">${r[3]}</div><div class="res-exch">${r[5]} &middot; ${r[4]}</div></div></div><div class="data-grid"><div class="data-card"><div class="dc-label">&#9672; RANGO OPTIMO</div><div class="dc-value green">${r[0]}</div><div class="range-bar-wrap"><div class="range-bar"></div></div></div><div class="data-card"><div class="dc-label">&#9672; LIMITES HARD</div><div class="dc-value amber">${r[1]}</div></div><div class="data-card"><div class="dc-label">&#9672; FECHA ANALISIS</div><div class="dc-value cyan small">${r[2].toUpperCase()}</div></div><div class="data-card"><div class="dc-label">&#9672; BOLSA</div><div class="dc-value small" style="color:#b0bec5">${r[5]}</div></div><div class="data-card full"><div class="dc-label">&#9672; SECTOR</div><div class="dc-value small" style="color:${c}">${r[3]} &middot; ${r[4]}</div></div></div>`;
+  // Inject quote placeholder
+  const qz=document.createElement("div");qz.id="quoteZone";co.appendChild(qz);
+  fetchQuote(tk);
   renderWL();
   if(window.innerWidth<700)panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
@@ -641,7 +673,9 @@ async function renderWL(){
     const r=DB[tk];const c=SC[r?.[3]]||"#00e676";
     const d=document.createElement("div");
     d.className="wl-item"+(tk===ct?" active":"");
-    d.innerHTML=`<div onclick="buscar('${tk}')" style="flex:1;cursor:pointer"><div class="wl-ticker" style="color:${c}">${tk}</div><div class="wl-sector">${r?.[3]||""}</div></div><button class="wl-del" onclick="delWL('${tk}')">&#10005;</button>`;
+    const qCache=quoteCache[tk];
+    const qHtml=qCache?`<div class="wl-quote"><div class="price">$${qCache.price?.toFixed(2)||"--"}</div><div class="chg ${qCache.changePct>=0?"up":"dn"}">${qCache.changePct>=0?"+":""}${qCache.changePct?.toFixed(2)||"0.00"}%</div></div>`:"";
+    d.innerHTML=`<div onclick="buscar('${tk}')" style="flex:1;cursor:pointer"><div class="wl-ticker" style="color:${c}">${tk}</div><div class="wl-sector">${r?.[3]||""}</div></div>${qHtml}<button class="wl-del" onclick="delWL('${tk}')">&#10005;</button>`;
     w.appendChild(d);
   });
 }
@@ -948,6 +982,135 @@ function xlsReset(){
   xlsShow("xlsIdle");
 }
 // ══════════════════════════════════════════════
+
+// ══════════════════════════════════════════════
+// QUOTE ENGINE — Bid/Ask/Price via /api/quote
+// Yahoo Finance (primary) + Polygon (fallback)
+// ══════════════════════════════════════════════
+var quoteCache={};
+var quoteTimer=null;
+var quoteTicker=null;
+
+function mktClass(state){
+  if(!state)return"closed";
+  state=state.toUpperCase();
+  if(state==="REGULAR")return"open";
+  if(state==="PRE")return"pre";
+  if(state==="POST"||state==="POSTPOST")return"post";
+  return"closed";
+}
+function mktLabel(state){
+  var s=mktClass(state);
+  if(s==="open")return"MERCADO ABIERTO";
+  if(s==="pre")return"PRE-MARKET";
+  if(s==="post")return"POST-MARKET";
+  return"MERCADO CERRADO";
+}
+function fmtVol(v){
+  if(!v||v===0)return"--";
+  if(v>=1e9)return(v/1e9).toFixed(2)+"B";
+  if(v>=1e6)return(v/1e6).toFixed(2)+"M";
+  if(v>=1e3)return(v/1e3).toFixed(0)+"K";
+  return String(v);
+}
+
+async function fetchQuote(tk){
+  var zone=document.getElementById("quoteZone");
+  if(!zone)return;
+  zone.innerHTML='<div class="quote-card"><div class="quote-loading">&#9676; CARGANDO COTIZACION...</div></div>';
+  quoteTicker=tk;
+  try{
+    var res=await fetch("/api/quote?ticker="+encodeURIComponent(tk));
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    var q=await res.json();
+    if(q.error)throw new Error(q.error);
+    quoteCache[tk]=q;
+    renderQuoteCard(q,zone);
+    renderWL();
+  }catch(err){
+    zone.innerHTML='<div class="quote-card"><div class="quote-err">&#9888; Cotizacion no disponible: '+err.message+'</div></div>';
+  }
+}
+
+function renderQuoteCard(q,zone){
+  if(!zone)return;
+  var sc=mktClass(q.marketState);
+  var sl=mktLabel(q.marketState);
+  var up=q.changePct>=0;
+  var chgCls=up?"up":"dn";
+  var chgSign=up?"+":"";
+  var price=q.price!=null?q.price.toFixed(2):"--";
+  var bid=q.bid!=null?q.bid.toFixed(2):"--";
+  var ask=q.ask!=null?q.ask.toFixed(2):"--";
+  var chgPct=chgSign+(q.changePct!=null?q.changePct.toFixed(2):"0.00")+"%";
+  var chgAbs=chgSign+(q.change!=null?q.change.toFixed(2):"0.00");
+  var vol=fmtVol(q.volume);
+  var open=q.open!=null?"$"+q.open.toFixed(2):"--";
+  var prev=q.prevClose!=null?"$"+q.prevClose.toFixed(2):"--";
+  var hi=q.high!=null?q.high.toFixed(2):"--";
+  var lo=q.low!=null?q.low.toFixed(2):"--";
+  var src=q.source==="yahoo"?"&#9670; YAHOO FINANCE":"&#9670; POLYGON.IO";
+  var now=new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  var tk=q.ticker||quoteTicker||"";
+
+  zone.innerHTML=
+'<div class="quote-card">'
++'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">'
++'<span class="market-badge '+sc+'"><span class="market-dot '+sc+'"></span>'+sl+'</span>'
++'<div style="font-family:Share Tech Mono,monospace;font-size:9px;color:#3a5a70">'+src+'</div>'
++'</div>'
++'<div class="quote-grid" style="grid-template-columns:1fr 1fr 1fr">'
++'<div class="qc" style="grid-column:1/-1;display:flex;align-items:baseline;justify-content:center;gap:12px;padding:10px 14px">'
++'<div><div class="qc-label">PRECIO ACTUAL</div><div class="qc-val '+chgCls+'" style="font-size:26px">$'+price+'</div></div>'
++'<div style="text-align:left"><div class="qc-val '+chgCls+'" style="font-size:15px">'+chgPct+'</div>'
++'<div style="font-family:Share Tech Mono,monospace;font-size:10px;color:#5a7a90">'+chgAbs+'</div></div>'
++'</div>'
++'<div class="qc"><div class="qc-label">BID</div><div class="qc-val bid-color">$'+bid+'</div><div class="qc-size">x'+(q.bidSize||"--")+'</div></div>'
++'<div class="qc"><div class="qc-label">ASK</div><div class="qc-val ask-color">$'+ask+'</div><div class="qc-size">x'+(q.askSize||"--")+'</div></div>'
++'<div class="qc"><div class="qc-label">VOLUMEN</div><div class="qc-val neu" style="font-size:14px">'+vol+'</div></div>'
++'</div>'
++'<div class="quote-grid-bot" style="margin-top:8px">'
++'<div class="qc"><div class="qc-label">APERTURA</div><div class="qc-val neu" style="font-size:13px">'+open+'</div></div>'
++'<div class="qc"><div class="qc-label">CIERRE ANT.</div><div class="qc-val neu" style="font-size:13px">'+prev+'</div></div>'
++'<div class="qc" style="padding:4px 8px"><div class="qc-label">RANGO DIA</div>'
++'<div style="font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;color:#ff3d57">$'+lo+'</div>'
++'<div style="font-family:Share Tech Mono,monospace;font-size:8px;color:#3a5a70">&#8213; rango &#8213;</div>'
++'<div style="font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;color:#00e676">$'+hi+'</div></div>'
++'</div>'
++'<div class="quote-footer">'
++'<span>Actualizado: '+now+'</span>'
++'<button class="quote-refresh" onclick="fetchQuote(''+tk+'')">&#8635; ACTUALIZAR</button>'
++'</div>'
++'</div>';
+}
+
+function startQuotePolling(){
+  if(quoteTimer)clearInterval(quoteTimer);
+  quoteTimer=setInterval(async function(){
+    if(quoteTicker){
+      var zone=document.getElementById("quoteZone");
+      if(zone){
+        try{
+          var res=await fetch("/api/quote?ticker="+encodeURIComponent(quoteTicker));
+          if(res.ok){var q=await res.json();if(q&&!q.error){quoteCache[quoteTicker]=q;renderQuoteCard(q,zone);}}
+        }catch(e){}
+      }
+    }
+    var wlTks=Array.from(document.querySelectorAll(".wl-ticker")).map(function(el){return el.textContent.trim();});
+    for(var i=0;i<wlTks.length;i++){
+      var tk=wlTks[i];
+      if(tk&&tk!==quoteTicker){
+        try{
+          var r2=await fetch("/api/quote?ticker="+encodeURIComponent(tk));
+          if(r2.ok){var q2=await r2.json();if(q2&&!q2.error)quoteCache[tk]=q2;}
+        }catch(e){}
+        await new Promise(function(resolve){setTimeout(resolve,500);});
+      }
+    }
+    renderWL();
+  },30000);
+}
+
 </script>
 </body>
 </html>
