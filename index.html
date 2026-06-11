@@ -181,6 +181,35 @@ tbody td{padding:9px 12px;vertical-align:middle}
 .wl-quote{font-family:"Rajdhani",sans-serif;font-size:12px;font-weight:700;text-align:right;line-height:1.3;flex-shrink:0;margin-right:6px}
 .wl-quote .price{color:#e8f4ff}.wl-quote .chg.up{color:#00e676}.wl-quote .chg.dn{color:#ff3d57}.wl-quote .chg.neu{color:#b0bec5}
 
+
+/* FUNDAMENTALS PANEL */
+.fund-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:12px}
+.fund-header{padding:11px 14px;background:#0a1520;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.fund-title{font-family:"Orbitron",monospace;font-size:11px;letter-spacing:.15em;color:#ffd600}
+.fund-select{background:#070d14;border:1px solid #2a4060;border-radius:3px;color:var(--white);font-family:"Orbitron",monospace;font-size:11px;font-weight:700;padding:6px 10px;outline:none;cursor:pointer;letter-spacing:.08em;max-width:140px}
+.fund-select option{background:#0d1520}
+.fund-refresh-btn{background:none;border:1px solid var(--border);color:var(--textdim);font-family:"Share Tech Mono",monospace;font-size:10px;padding:5px 10px;border-radius:2px;cursor:pointer;transition:color .15s}
+.fund-refresh-btn:hover{color:var(--cyan)}
+.fund-body{padding:12px 14px}
+.fund-loading{text-align:center;padding:24px;font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--muted)}
+.fund-err{text-align:center;padding:16px;font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--red)}
+.fund-empty{text-align:center;padding:20px;font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--muted);line-height:1.8}
+.fund-group{margin-bottom:12px}
+.fund-group-title{font-family:"Share Tech Mono",monospace;font-size:9px;letter-spacing:.15em;color:var(--muted);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(42,74,100,.4)}
+.fund-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.fund-row{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-radius:2px;background:#070d14;gap:8px;cursor:pointer;transition:background .15s;border:1px solid transparent}
+.fund-row:hover{background:#0a1520;border-color:rgba(42,74,100,.4)}
+.fund-row.fav{background:rgba(255,214,0,.05);border-color:rgba(255,214,0,.2)}
+.fund-row.fav .fund-star{color:#ffd600}
+.fund-label{font-family:"Share Tech Mono",monospace;font-size:9px;color:var(--textdim);flex-shrink:0;white-space:nowrap}
+.fund-val{font-family:"Rajdhani",sans-serif;font-size:13px;font-weight:700;color:var(--white);text-align:right}
+.fund-val.up{color:#00e676}.fund-val.dn{color:#ff3d57}.fund-val.neu{color:#b0bec5}
+.fund-star{font-size:11px;color:rgba(255,214,0,.2);margin-left:4px;flex-shrink:0;transition:color .15s}
+.fund-favs-section{margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid rgba(255,214,0,.15)}
+.fund-favs-title{font-family:"Orbitron",monospace;font-size:9px;letter-spacing:.15em;color:#ffd600;margin-bottom:6px}
+.fund-hint{font-family:"Share Tech Mono",monospace;font-size:9px;color:var(--muted);text-align:center;padding:6px 0;margin-top:8px}
+.fund-ticker-name{font-family:"Orbitron",monospace;font-size:10px;color:var(--cyan);letter-spacing:.1em;padding:0 14px 8px}
+
 /* XLS IMPORT */
 .xls-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #2a4a64;border-radius:4px;padding:28px 20px;cursor:pointer;background:#070d14;transition:border-color .2s}
 .xls-drop:hover{border-color:#00e676}
@@ -322,6 +351,26 @@ tbody td{padding:9px 12px;vertical-align:middle}
         <div class="watchlist-items" id="watchlistItems"><div class="wl-empty">-</div></div>
       </div>
     </div>
+
+      <!-- ★ FUNDAMENTALS PANEL -->
+      <div class="fund-panel">
+        <div class="fund-header">
+          <span class="fund-title">★ FUNDAMENTALS</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select class="fund-select" id="fundSelect" onchange="loadFundamentals(this.value)">
+              <option value="">-- TICKER --</option>
+            </select>
+            <button class="fund-refresh-btn" onclick="loadFundamentals(document.getElementById('fundSelect').value)">&#8635;</button>
+          </div>
+        </div>
+        <div class="fund-body" id="fundBody">
+          <div class="fund-empty">
+            &#9672; Selecciona un ticker<br>
+            <span style="opacity:.5;font-size:9px">&#9733; Click en cualquier campo para marcarlo favorito</span>
+          </div>
+        </div>
+      </div>
+      <!-- ★ FIN FUNDAMENTALS -->
   </div>
 
   <!-- ADMIN TAB -->
@@ -588,6 +637,7 @@ async function initApp(){
   buildSF();
   await renderWL();
   startQuotePolling();
+  fundInit();
 }
 
 function applyLayout(){
@@ -1110,6 +1160,161 @@ function startQuotePolling(){
     renderWL();
   },30000);
 }
+
+
+// ══════════════════════════════════════════════
+// FUNDAMENTALS ENGINE — Finviz via /api/fundamentals
+// ══════════════════════════════════════════════
+var fundFavs = JSON.parse(localStorage.getItem("rdaid_fund_favs")||"[]");
+var fundCache = {};
+
+var FUND_GROUPS = {
+  "VALUACION":     ["P/E","Forward P/E","PEG","P/S","P/B","P/C","P/FCF","EV/EBITDA","EV/Sales"],
+  "EMPRESA":       ["Market Cap","Income","Sales","Book/sh","Cash/sh","Employees","IPO","Index","Option/Short"],
+  "EPS":           ["EPS (ttm)","EPS next Y","EPS next 5Y","EPS past 5Y","EPS this Y","EPS Y/Y TTM","Sales Q/Q","EPS Q/Q","Earnings"],
+  "DIVIDENDOS":    ["Dividend Est.","Dividend TTM","Dividend Ex-Date","Dividend Gr. 3/5Y","Payout"],
+  "BALANCE":       ["Book/sh","Cash/sh","Debt/Eq","LT Debt/Eq","Quick Ratio","Current Ratio"],
+  "RENTABILIDAD":  ["ROA","ROE","ROI","ROIC","Gross Margin","Oper. Margin","Profit Margin"],
+  "INSTITUCIONAL": ["Insider Own","Insider Trans","Inst Own","Inst Trans","Short Float","Short Ratio","Short Interest","Shs Outstand","Shs Float"],
+  "TECNICO":       ["52W High","52W Low","RSI (14)","Beta","ATR (14)","Volatility","SMA20","SMA50","SMA200","Rel Volume","Avg Volume"],
+  "PERFORMANCE":   ["Perf Week","Perf Month","Perf Quarter","Perf Half Y","Perf YTD","Perf Year","Perf 3Y","Perf 5Y","Perf 10Y"],
+  "PRECIO":        ["Recom","Target Price","Prev Close","Price","Change","Volume","Trades"]
+};
+
+function fundPopulateSelect(){
+  var sel=document.getElementById("fundSelect");
+  if(!sel)return;
+  sel.innerHTML='<option value="">-- TICKER --</option>';
+  DB=lDB();
+  Object.keys(DB).sort().forEach(function(tk){
+    var o=document.createElement("option");
+    o.value=tk; o.textContent=tk;
+    sel.appendChild(o);
+  });
+}
+
+async function loadFundamentals(ticker){
+  if(!ticker)return;
+  var body=document.getElementById("fundBody");
+  if(!body)return;
+  body.innerHTML='<div class="fund-loading">&#9676; Cargando datos de '+ticker+'...</div>';
+
+  // Use cache if recent (<5min)
+  var cached=fundCache[ticker];
+  var now=Date.now();
+  if(cached && (now-cached.ts)<300000){
+    renderFundamentals(cached.data);
+    return;
+  }
+
+  try{
+    var res=await fetch("/api/fundamentals?ticker="+encodeURIComponent(ticker));
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    var json=await res.json();
+    if(json.error)throw new Error(json.error);
+    fundCache[ticker]={data:json, ts:now};
+    renderFundamentals(json);
+  }catch(err){
+    body.innerHTML='<div class="fund-err">&#9888; '+err.message+'</div>';
+  }
+}
+
+function fundValClass(label, val){
+  if(!val||val==="-"||val==="N/A")return"neu";
+  var v=val.toString();
+  // Performance fields
+  if(label.startsWith("Perf")||label==="Change"||label==="EPS Y/Y TTM"||
+     label==="Sales Q/Q"||label==="EPS Q/Q"||label==="Insider Trans"||label==="Inst Trans"){
+    if(v.startsWith("-"))return"dn";
+    if(v.match(/^[0-9]/))return"up";
+  }
+  // RSI extremes
+  if(label==="RSI (14)"){
+    var n=parseFloat(v);
+    if(n>=70)return"dn";
+    if(n<=30)return"up";
+    return"neu";
+  }
+  return"neu";
+}
+
+function toggleFav(field){
+  var idx=fundFavs.indexOf(field);
+  if(idx>=0) fundFavs.splice(idx,1);
+  else fundFavs.push(field);
+  localStorage.setItem("rdaid_fund_favs", JSON.stringify(fundFavs));
+  // Re-render current
+  var sel=document.getElementById("fundSelect");
+  var tk=sel?sel.value:"";
+  if(tk && fundCache[tk]){
+    renderFundamentals(fundCache[tk].data);
+  }
+}
+
+function renderFundamentals(json){
+  var body=document.getElementById("fundBody");
+  if(!body)return;
+  var d=json.data||{};
+  var tk=json.ticker||"";
+  var html="";
+
+  // Ticker name header
+  if(json.company){
+    html+='<div class="fund-ticker-name">'+tk+' &mdash; <span style="color:var(--textdim);font-family:Rajdhani,sans-serif;font-size:12px">'+json.company+'</span></div>';
+  }
+
+  // FAVORITES section first
+  if(fundFavs.length>0){
+    html+='<div class="fund-favs-section">';
+    html+='<div class="fund-favs-title">&#9733; FAVORITOS</div>';
+    html+='<div class="fund-grid">';
+    fundFavs.forEach(function(field){
+      var val=d[field]||"-";
+      var cls=fundValClass(field,val);
+      var isFav=true;
+      html+='<div class="fund-row fav" onclick="toggleFav(''+field.replace(/'/g,"\'")+'')">'
+        +'<span class="fund-label">'+field+'</span>'
+        +'<div style="display:flex;align-items:center;gap:4px">'
+        +'<span class="fund-val '+cls+'">'+val+'</span>'
+        +'<span class="fund-star">&#9733;</span>'
+        +'</div></div>';
+    });
+    html+='</div></div>';
+  }
+
+  // All groups
+  Object.keys(FUND_GROUPS).forEach(function(group){
+    var fields=FUND_GROUPS[group];
+    var rows=fields.filter(function(f){return d[f]&&d[f]!=="-"&&d[f]!=="N/A";});
+    if(!rows.length)return;
+    html+='<div class="fund-group">';
+    html+='<div class="fund-group-title">'+group+'</div>';
+    html+='<div class="fund-grid">';
+    rows.forEach(function(field){
+      var val=d[field]||"-";
+      var cls=fundValClass(field,val);
+      var isFav=fundFavs.indexOf(field)>=0;
+      html+='<div class="fund-row'+(isFav?" fav":"") +'" onclick="toggleFav(''+field.replace(/'/g,"\'")+'')">'
+        +'<span class="fund-label">'+field+'</span>'
+        +'<div style="display:flex;align-items:center;gap:4px">'
+        +'<span class="fund-val '+cls+'">'+val+'</span>'
+        +'<span class="fund-star">'+(isFav?"&#9733;":"&#9734;")+'</span>'
+        +'</div></div>';
+    });
+    html+='</div></div>';
+  });
+
+  html+='<div class="fund-hint">&#9733; Click en cualquier campo para marcarlo favorito &mdash; aparece arriba destacado</div>';
+  html+='<div style="font-family:Share Tech Mono,monospace;font-size:8px;color:#2a4a64;text-align:center;margin-top:4px">Fuente: Finviz &mdash; '+new Date().toLocaleTimeString()+'</div>';
+
+  body.innerHTML=html;
+}
+
+// Populate select on init and when DB changes
+function fundInit(){
+  fundPopulateSelect();
+}
+// ══════════════════════════════════════════════
 
 </script>
 </body>
