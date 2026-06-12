@@ -613,36 +613,19 @@ tbody td{padding:9px 12px;vertical-align:middle}
 
   <div class="tab-page" id="tab-fundfavs">
     <button class="back-btn" onclick="goBack()">&#8592; VOLVER</button>
-    <div class="construction-page">
-      <div class="construction-img"><svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="90" cy="90" r="86" fill="#070d14" stroke="#1a3a54" stroke-width="2"/>
-  <circle cx="90" cy="90" r="86" fill="none" stroke="#00e676" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="4 6"/>
-  <g class="const-gear-big" style="transform-origin:90px 90px">
-    <path d="M90 50 L96 58 L106 56 L108 66 L118 70 L114 80 L122 88 L114 96 L118 106 L108 110 L106 120 L96 118 L90 126 L84 118 L74 120 L72 110 L62 106 L66 96 L58 88 L66 80 L62 70 L72 66 L74 56 L84 58 Z"
-      fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
-    <circle cx="90" cy="88" r="14" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
-  </g>
-  <g class="const-gear-small" style="transform-origin:128px 122px">
-    <path d="M128 102 L132 107 L139 106 L140 113 L147 116 L144 123 L149 129 L144 135 L147 142 L140 145 L139 152 L132 151 L128 156 L124 151 L117 152 L116 145 L109 142 L112 135 L107 129 L112 123 L109 116 L116 113 L117 106 L124 107 Z"
-      fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
-    <circle cx="128" cy="129" r="9" fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
-  </g>
-  <rect x="40" y="118" width="40" height="34" rx="2" fill="none" stroke="#5a7a90" stroke-width="2"/>
-  <line x1="40" y1="128" x2="80" y2="128" stroke="#5a7a90" stroke-width="1.5" stroke-opacity="0.5"/>
-  <line x1="48" y1="118" x2="48" y2="152" stroke="#ffab00" stroke-width="2"/>
-  <line x1="72" y1="118" x2="72" y2="152" stroke="#ffab00" stroke-width="2"/>
-  <text x="90" y="148" text-anchor="middle" font-family="Orbitron,monospace" font-size="9" font-weight="900" fill="#00e676" letter-spacing="2" opacity="0">PUL</text>
-  <style>
-    .const-gear-big{animation:constSpin 8s linear infinite}
-    .const-gear-small{animation:constSpinRev 5s linear infinite}
-    @keyframes constSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    @keyframes constSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
-  </style>
-</svg></div>
-      <div class="construction-title">EN CONSTRUCCION</div>
-      <div class="construction-sub2">FUNDAMENTALS FAVORITAS</div>
-      <div class="construction-bar"></div>
-      <div class="construction-sub">Vista dedicada de tus indicadores fundamentales favoritos para todos tus tickers.<br>&#9670; PROXIMAMENTE &#9670;</div>
+    <div class="admin-wrap">
+      <div class="admin-header">
+        <h2>&#9733; FUNDAMENTALS FAVORITAS</h2>
+        <p>Selecciona los campos que quieres ver destacados al buscar cualquier ticker. Se guardan en este dispositivo.</p>
+      </div>
+      <div style="padding:16px">
+        <div id="fundFavsGroups"></div>
+        <div class="fav-dd-actions">
+          <button class="fav-dd-save" id="fundFavsSaveBtn">&#10003; GUARDAR CAMBIOS</button>
+          <button class="fav-dd-clear" id="fundFavsClearBtn">&#10005; LIMPIAR TODO</button>
+        </div>
+        <div class="profile-msg" id="fundFavsMsg"></div>
+      </div>
     </div>
   </div>
 
@@ -881,6 +864,7 @@ function goToTab(tab,fromBack){
   if(drawerItem)drawerItem.classList.add("active");
   if(tab==="admin")renderTable();
   if(tab==="profile")profileLoad();
+  if(tab==="fundfavs")fundFavsPageInit();
   closeDrawer();
 }
 function goBack(){
@@ -1460,25 +1444,44 @@ async function loadFundData(ticker) {
   return json;
 }
 
+
+function fundFavsPageInit(){
+  var container=document.getElementById("fundFavsGroups");
+  if(!container)return;
+  container.innerHTML=buildDropdownHTML();
+  var g=container.querySelector(".fav-dd-groups");
+  if(g)g.style.maxHeight="none";
+
+  var msg=document.getElementById("fundFavsMsg");
+  if(msg){msg.className="profile-msg";msg.textContent="";}
+
+  document.getElementById("fundFavsSaveBtn").onclick=function(){
+    fundFavs=[];
+    container.querySelectorAll(".fav-dd-field.selected").forEach(function(el){
+      fundFavs.push(el.getAttribute("data-field"));
+    });
+    localStorage.setItem("rdaid_fund_favs",JSON.stringify(fundFavs));
+    msg.textContent="\u2713 Favoritos guardados ("+fundFavs.length+" campos)";
+    msg.className="profile-msg show ok";
+    notify("Favoritos guardados","success");
+  };
+
+  document.getElementById("fundFavsClearBtn").onclick=function(){
+    container.querySelectorAll(".fav-dd-field").forEach(function(el){
+      el.classList.remove("selected");
+    });
+  };
+}
+
 function renderFavCard(ticker) {
   var card = document.getElementById("favCard");
   if (!card) return;
 
-  // Always show the card structure
   card.innerHTML =
     '<div class="fav-card">' +
       '<div class="fav-header">' +
         '<div class="fav-header-left">' +
           '<span>&#9733; FUNDAMENTALS FAVORITOS</span>' +
-        '</div>' +
-        '<button class="fav-cfg-btn" id="favCfgBtn">&#9881; CONFIGURAR FAVORITOS</button>' +
-      '</div>' +
-      '<div class="fav-dropdown" id="favDropdown">' +
-        '<div class="fav-dd-title">&#9733; Selecciona los campos que quieres ver — click para marcar/desmarcar</div>' +
-        buildDropdownHTML() +
-        '<div class="fav-dd-actions">' +
-          '<button class="fav-dd-save" id="favSaveBtn">&#10003; GUARDAR Y CERRAR</button>' +
-          '<button class="fav-dd-clear" id="favClearBtn">&#10005; LIMPIAR TODO</button>' +
         '</div>' +
       '</div>' +
       '<div class="fav-body" id="favBody">' +
@@ -1487,47 +1490,11 @@ function renderFavCard(ticker) {
       '<div class="fav-footer" id="favFooter"></div>' +
     '</div>';
 
-  // Wire up config button
-  document.getElementById("favCfgBtn").addEventListener("click", function() {
-    var dd = document.getElementById("favDropdown");
-    var btn = document.getElementById("favCfgBtn");
-    fundDropOpen = !fundDropOpen;
-    dd.classList.toggle("open", fundDropOpen);
-    btn.classList.toggle("open", fundDropOpen);
-    btn.textContent = fundDropOpen ? "✕ CERRAR" : "⚙ CONFIGURAR FAVORITOS";
-  });
-
-  // Wire up save button
-  document.getElementById("favSaveBtn").addEventListener("click", function() {
-    // Read selected fields from dropdown
-    fundFavs = [];
-    document.querySelectorAll(".fav-dd-field.selected").forEach(function(el) {
-      fundFavs.push(el.getAttribute("data-field"));
-    });
-    localStorage.setItem("rdaid_fund_favs", JSON.stringify(fundFavs));
-    // Close dropdown
-    fundDropOpen = false;
-    var dd = document.getElementById("favDropdown");
-    var btn = document.getElementById("favCfgBtn");
-    if (dd) dd.classList.remove("open");
-    if (btn) { btn.classList.remove("open"); btn.textContent = "⚙ CONFIGURAR FAVORITOS"; }
-    // Re-render fav values with current ticker
-    if (ct) populateFavValues(ct);
-  });
-
-  // Wire up clear button
-  document.getElementById("favClearBtn").addEventListener("click", function() {
-    document.querySelectorAll(".fav-dd-field").forEach(function(el) {
-      el.classList.remove("selected");
-    });
-  });
-
-  // Load data and populate values
   if (fundFavs.length === 0) {
     document.getElementById("favBody").innerHTML =
       '<div class="fav-empty">' +
-        '&#9881; Presiona <b style="color:#ffd600">CONFIGURAR FAVORITOS</b> para elegir qu&eacute; campos ver aqu&iacute;<br>' +
-        '<span style="opacity:.5;font-size:9px">P/E, RSI, Market Cap, Target Price, 52W High/Low...</span>' +
+        '&#9733; A&uacute;n no tienes campos favoritos.<br>' +
+        '<span style="opacity:.7">Ve al men&uacute; &#9776; &rarr; <b style="color:#ffd600">FUNDAMENTALS FAVORITAS</b> para elegirlos</span>' +
       '</div>';
     return;
   }
