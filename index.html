@@ -232,7 +232,8 @@ tbody td{padding:9px 12px;vertical-align:middle}
 .drawer-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:4px;cursor:pointer;font-family:"Share Tech Mono",monospace;font-size:12px;letter-spacing:.06em;color:var(--textdim);transition:all .15s;border:1px solid transparent;background:none}
 .drawer-item:hover{background:rgba(0,229,255,.05);color:var(--white);border-color:rgba(42,74,100,.5)}
 .drawer-item.active{background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.3);color:var(--green)}
-.drawer-item .di-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.drawer-item .di-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.di-icon-svg{width:18px;height:18px;flex-shrink:0}
 .drawer-item .di-badge{font-size:8px;font-family:"Share Tech Mono",monospace;background:rgba(255,171,0,.12);color:var(--amber);border:1px solid rgba(255,171,0,.3);padding:2px 6px;border-radius:2px;margin-left:auto;letter-spacing:.05em;white-space:nowrap}
 .drawer-footer{padding:12px 16px;border-top:1px solid var(--border);font-family:"Share Tech Mono",monospace;font-size:9px;color:#3a5a70;text-align:center}
 /* CONSTRUCTION PAGE */
@@ -304,12 +305,12 @@ tbody td{padding:9px 12px;vertical-align:middle}
     <button class="drawer-close" id="drawerClose">&#10005;</button>
   </div>
   <div class="drawer-items">
-    <button class="drawer-item active" data-tab="search"><span class="di-icon">&#8981;</span> BUSCAR TICKER</button>
-    <button class="drawer-item" data-tab="admin"><span class="di-icon">&#9881;</span> ADMINISTRAR DB</button>
-    <button class="drawer-item" data-tab="plans"><span class="di-icon">&#128202;</span> PLANES DE INVERSION<span class="di-badge">PRONTO</span></button>
-    <button class="drawer-item" data-tab="checklist"><span class="di-icon">&#10003;</span> CHECKLIST<span class="di-badge">PRONTO</span></button>
-    <button class="drawer-item" data-tab="fundfavs"><span class="di-icon">&#9733;</span> FUNDAMENTALS FAVORITAS<span class="di-badge">PRONTO</span></button>
-    <button class="drawer-item" data-tab="profile"><span class="di-icon">&#128100;</span> MI PERFIL<span class="di-badge">PRONTO</span></button>
+    <button class="drawer-item active" data-tab="search"><span class="di-icon"><svg class="di-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> BUSCAR TICKER</button>
+    <button class="drawer-item" data-tab="admin"><span class="di-icon"><svg class="di-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg></span> ADMINISTRAR DB</button>
+    <button class="drawer-item" data-tab="plans"><span class="di-icon"><svg class="di-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="20" y2="20"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/></svg></span> PLANES DE INVERSION</button>
+    <button class="drawer-item" data-tab="checklist"><span class="di-icon"><svg class="di-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 11l2 2 4-4"/><line x1="8" y1="17" x2="16" y2="17"/></svg></span> CHECKLIST</button>
+    <button class="drawer-item" data-tab="fundfavs"><span class="di-icon"><svg class="di-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.6 1.7 6.9L12 17l-6.3 3.7 1.7-6.9L2 9.2l7.1-.6z"/></svg></span> FUNDAMENTALS FAVORITAS</button>
+    <button class="drawer-item" data-tab="profile"><span class="di-icon"><svg class="di-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span> MI PERFIL</button>
   </div>
   <div class="drawer-footer">&#9670; INVEST PULCALL &#183; v1.0</div>
 </div>
