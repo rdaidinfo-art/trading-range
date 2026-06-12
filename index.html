@@ -237,7 +237,10 @@ tbody td{padding:9px 12px;vertical-align:middle}
 /* CONSTRUCTION PAGE */
 .construction-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px;text-align:center;padding:40px 20px;background:var(--panel);border:1px solid var(--border);border-radius:4px}
 .construction-icon{font-size:52px;margin-bottom:18px;opacity:.55}
-.construction-title{font-family:"Orbitron",monospace;font-size:14px;letter-spacing:.2em;color:var(--amber);margin-bottom:10px}
+.construction-title{font-family:"Orbitron",monospace;font-size:14px;letter-spacing:.2em;color:var(--amber);margin-bottom:6px}
+.construction-img{margin-bottom:10px;filter:drop-shadow(0 0 12px rgba(0,229,255,.15))}
+.construction-sub2{font-family:"Share Tech Mono",monospace;font-size:11px;letter-spacing:.15em;color:var(--cyan);margin-bottom:4px}
+
 .construction-sub{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--muted);line-height:1.8;max-width:340px}
 .construction-bar{width:200px;height:4px;background:#0a1520;border:1px solid var(--border);border-radius:3px;margin:20px 0;overflow:hidden;position:relative}
 .construction-bar::after{content:"";position:absolute;top:0;left:0;height:100%;width:40%;background:linear-gradient(90deg,var(--amber),var(--cyan));animation:constpulse 2s ease-in-out infinite}
@@ -361,11 +364,6 @@ tbody td{padding:9px 12px;vertical-align:middle}
     </div>
   </div>
   <div class="header-line"></div>
-
-  <div class="nav-tabs">
-    <button class="nav-tab active" data-tab="search" onclick="switchTab('search',this)">&#8981; BUSCAR TICKER</button>
-    <button class="nav-tab" data-tab="admin" onclick="switchTab('admin',this)">&#9881; ADMINISTRAR DB</button>
-  </div>
 
   <!-- SEARCH TAB -->
   <div class="tab-page active" id="tab-search">
@@ -522,43 +520,139 @@ tbody td{padding:9px 12px;vertical-align:middle}
     </div>
   </div>
 
-  <!-- PLANES DE INVERSION -->
   <div class="tab-page" id="tab-plans">
     <div class="construction-page">
-      <div class="construction-icon">&#128202;</div>
+      <div class="construction-img"><svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="90" cy="90" r="86" fill="#070d14" stroke="#1a3a54" stroke-width="2"/>
+  <circle cx="90" cy="90" r="86" fill="none" stroke="#00e676" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="4 6"/>
+  <g class="const-gear-big" style="transform-origin:90px 90px">
+    <path d="M90 50 L96 58 L106 56 L108 66 L118 70 L114 80 L122 88 L114 96 L118 106 L108 110 L106 120 L96 118 L90 126 L84 118 L74 120 L72 110 L62 106 L66 96 L58 88 L66 80 L62 70 L72 66 L74 56 L84 58 Z"
+      fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
+    <circle cx="90" cy="88" r="14" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
+  </g>
+  <g class="const-gear-small" style="transform-origin:128px 122px">
+    <path d="M128 102 L132 107 L139 106 L140 113 L147 116 L144 123 L149 129 L144 135 L147 142 L140 145 L139 152 L132 151 L128 156 L124 151 L117 152 L116 145 L109 142 L112 135 L107 129 L112 123 L109 116 L116 113 L117 106 L124 107 Z"
+      fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
+    <circle cx="128" cy="129" r="9" fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
+  </g>
+  <rect x="40" y="118" width="40" height="34" rx="2" fill="none" stroke="#5a7a90" stroke-width="2"/>
+  <line x1="40" y1="128" x2="80" y2="128" stroke="#5a7a90" stroke-width="1.5" stroke-opacity="0.5"/>
+  <line x1="48" y1="118" x2="48" y2="152" stroke="#ffab00" stroke-width="2"/>
+  <line x1="72" y1="118" x2="72" y2="152" stroke="#ffab00" stroke-width="2"/>
+  <text x="90" y="148" text-anchor="middle" font-family="Orbitron,monospace" font-size="9" font-weight="900" fill="#00e676" letter-spacing="2" opacity="0">PUL</text>
+  <style>
+    .const-gear-big{animation:constSpin 8s linear infinite}
+    .const-gear-small{animation:constSpinRev 5s linear infinite}
+    @keyframes constSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes constSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+  </style>
+</svg></div>
       <div class="construction-title">EN CONSTRUCCION</div>
+      <div class="construction-sub2">PLANES DE INVERSION</div>
       <div class="construction-bar"></div>
-      <div class="construction-sub">PLANES DE INVERSION &#8212; viene pronto<br>Estrategias y planes personalizados de inversi&oacute;n basados en tu perfil de riesgo.</div>
+      <div class="construction-sub">Estrategias y planes personalizados de inversi&oacute;n basados en tu perfil de riesgo.<br>&#9670; PROXIMAMENTE &#9670;</div>
     </div>
   </div>
 
-  <!-- CHECKLIST -->
   <div class="tab-page" id="tab-checklist">
     <div class="construction-page">
-      <div class="construction-icon">&#10003;</div>
+      <div class="construction-img"><svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="90" cy="90" r="86" fill="#070d14" stroke="#1a3a54" stroke-width="2"/>
+  <circle cx="90" cy="90" r="86" fill="none" stroke="#00e676" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="4 6"/>
+  <g class="const-gear-big" style="transform-origin:90px 90px">
+    <path d="M90 50 L96 58 L106 56 L108 66 L118 70 L114 80 L122 88 L114 96 L118 106 L108 110 L106 120 L96 118 L90 126 L84 118 L74 120 L72 110 L62 106 L66 96 L58 88 L66 80 L62 70 L72 66 L74 56 L84 58 Z"
+      fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
+    <circle cx="90" cy="88" r="14" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
+  </g>
+  <g class="const-gear-small" style="transform-origin:128px 122px">
+    <path d="M128 102 L132 107 L139 106 L140 113 L147 116 L144 123 L149 129 L144 135 L147 142 L140 145 L139 152 L132 151 L128 156 L124 151 L117 152 L116 145 L109 142 L112 135 L107 129 L112 123 L109 116 L116 113 L117 106 L124 107 Z"
+      fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
+    <circle cx="128" cy="129" r="9" fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
+  </g>
+  <rect x="40" y="118" width="40" height="34" rx="2" fill="none" stroke="#5a7a90" stroke-width="2"/>
+  <line x1="40" y1="128" x2="80" y2="128" stroke="#5a7a90" stroke-width="1.5" stroke-opacity="0.5"/>
+  <line x1="48" y1="118" x2="48" y2="152" stroke="#ffab00" stroke-width="2"/>
+  <line x1="72" y1="118" x2="72" y2="152" stroke="#ffab00" stroke-width="2"/>
+  <text x="90" y="148" text-anchor="middle" font-family="Orbitron,monospace" font-size="9" font-weight="900" fill="#00e676" letter-spacing="2" opacity="0">PUL</text>
+  <style>
+    .const-gear-big{animation:constSpin 8s linear infinite}
+    .const-gear-small{animation:constSpinRev 5s linear infinite}
+    @keyframes constSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes constSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+  </style>
+</svg></div>
       <div class="construction-title">EN CONSTRUCCION</div>
+      <div class="construction-sub2">CHECKLIST</div>
       <div class="construction-bar"></div>
-      <div class="construction-sub">CHECKLIST &#8212; viene pronto<br>Lista de verificaci&oacute;n antes de entrar a una operaci&oacute;n.</div>
+      <div class="construction-sub">Lista de verificaci&oacute;n antes de entrar a una operaci&oacute;n.<br>&#9670; PROXIMAMENTE &#9670;</div>
     </div>
   </div>
 
-  <!-- FUNDAMENTALS FAVORITAS -->
   <div class="tab-page" id="tab-fundfavs">
     <div class="construction-page">
-      <div class="construction-icon">&#9733;</div>
+      <div class="construction-img"><svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="90" cy="90" r="86" fill="#070d14" stroke="#1a3a54" stroke-width="2"/>
+  <circle cx="90" cy="90" r="86" fill="none" stroke="#00e676" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="4 6"/>
+  <g class="const-gear-big" style="transform-origin:90px 90px">
+    <path d="M90 50 L96 58 L106 56 L108 66 L118 70 L114 80 L122 88 L114 96 L118 106 L108 110 L106 120 L96 118 L90 126 L84 118 L74 120 L72 110 L62 106 L66 96 L58 88 L66 80 L62 70 L72 66 L74 56 L84 58 Z"
+      fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
+    <circle cx="90" cy="88" r="14" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
+  </g>
+  <g class="const-gear-small" style="transform-origin:128px 122px">
+    <path d="M128 102 L132 107 L139 106 L140 113 L147 116 L144 123 L149 129 L144 135 L147 142 L140 145 L139 152 L132 151 L128 156 L124 151 L117 152 L116 145 L109 142 L112 135 L107 129 L112 123 L109 116 L116 113 L117 106 L124 107 Z"
+      fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
+    <circle cx="128" cy="129" r="9" fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
+  </g>
+  <rect x="40" y="118" width="40" height="34" rx="2" fill="none" stroke="#5a7a90" stroke-width="2"/>
+  <line x1="40" y1="128" x2="80" y2="128" stroke="#5a7a90" stroke-width="1.5" stroke-opacity="0.5"/>
+  <line x1="48" y1="118" x2="48" y2="152" stroke="#ffab00" stroke-width="2"/>
+  <line x1="72" y1="118" x2="72" y2="152" stroke="#ffab00" stroke-width="2"/>
+  <text x="90" y="148" text-anchor="middle" font-family="Orbitron,monospace" font-size="9" font-weight="900" fill="#00e676" letter-spacing="2" opacity="0">PUL</text>
+  <style>
+    .const-gear-big{animation:constSpin 8s linear infinite}
+    .const-gear-small{animation:constSpinRev 5s linear infinite}
+    @keyframes constSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes constSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+  </style>
+</svg></div>
       <div class="construction-title">EN CONSTRUCCION</div>
+      <div class="construction-sub2">FUNDAMENTALS FAVORITAS</div>
       <div class="construction-bar"></div>
-      <div class="construction-sub">FUNDAMENTALS FAVORITAS &#8212; viene pronto<br>Vista dedicada de tus indicadores fundamentales favoritos para todos tus tickers.</div>
+      <div class="construction-sub">Vista dedicada de tus indicadores fundamentales favoritos para todos tus tickers.<br>&#9670; PROXIMAMENTE &#9670;</div>
     </div>
   </div>
 
-  <!-- MI PERFIL -->
   <div class="tab-page" id="tab-profile">
     <div class="construction-page">
-      <div class="construction-icon">&#128100;</div>
+      <div class="construction-img"><svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="90" cy="90" r="86" fill="#070d14" stroke="#1a3a54" stroke-width="2"/>
+  <circle cx="90" cy="90" r="86" fill="none" stroke="#00e676" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="4 6"/>
+  <g class="const-gear-big" style="transform-origin:90px 90px">
+    <path d="M90 50 L96 58 L106 56 L108 66 L118 70 L114 80 L122 88 L114 96 L118 106 L108 110 L106 120 L96 118 L90 126 L84 118 L74 120 L72 110 L62 106 L66 96 L58 88 L66 80 L62 70 L72 66 L74 56 L84 58 Z"
+      fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
+    <circle cx="90" cy="88" r="14" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-opacity="0.8"/>
+  </g>
+  <g class="const-gear-small" style="transform-origin:128px 122px">
+    <path d="M128 102 L132 107 L139 106 L140 113 L147 116 L144 123 L149 129 L144 135 L147 142 L140 145 L139 152 L132 151 L128 156 L124 151 L117 152 L116 145 L109 142 L112 135 L107 129 L112 123 L109 116 L116 113 L117 106 L124 107 Z"
+      fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
+    <circle cx="128" cy="129" r="9" fill="none" stroke="#ffab00" stroke-width="2" stroke-opacity="0.85"/>
+  </g>
+  <rect x="40" y="118" width="40" height="34" rx="2" fill="none" stroke="#5a7a90" stroke-width="2"/>
+  <line x1="40" y1="128" x2="80" y2="128" stroke="#5a7a90" stroke-width="1.5" stroke-opacity="0.5"/>
+  <line x1="48" y1="118" x2="48" y2="152" stroke="#ffab00" stroke-width="2"/>
+  <line x1="72" y1="118" x2="72" y2="152" stroke="#ffab00" stroke-width="2"/>
+  <text x="90" y="148" text-anchor="middle" font-family="Orbitron,monospace" font-size="9" font-weight="900" fill="#00e676" letter-spacing="2" opacity="0">PUL</text>
+  <style>
+    .const-gear-big{animation:constSpin 8s linear infinite}
+    .const-gear-small{animation:constSpinRev 5s linear infinite}
+    @keyframes constSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes constSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+  </style>
+</svg></div>
       <div class="construction-title">EN CONSTRUCCION</div>
+      <div class="construction-sub2">MI PERFIL</div>
       <div class="construction-bar"></div>
-      <div class="construction-sub">MI PERFIL &#8212; viene pronto<br>Configuraci&oacute;n de cuenta, preferencias y datos personales.</div>
+      <div class="construction-sub">Configuraci&oacute;n de cuenta, preferencias y datos personales.<br>&#9670; PROXIMAMENTE &#9670;</div>
     </div>
   </div>
 </div>
